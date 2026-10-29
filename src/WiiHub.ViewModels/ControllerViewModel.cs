@@ -219,7 +219,16 @@ public sealed class ControllerViewModel : ObservableObject
     public string StatusText { get => _statusText; private set => Set(ref _statusText, value); }
 
     private int _batteryPercent = -1;
-    public int BatteryPercent { get => _batteryPercent; private set => Set(ref _batteryPercent, value); }
+    public int BatteryPercent
+    {
+        get => _batteryPercent;
+        private set
+        {
+            if (Set(ref _batteryPercent, value)) Raise(nameof(HasBattery));
+        }
+    }
+
+    public bool HasBattery => _batteryPercent >= 0;
 
     private string _batteryText = "—";
     public string BatteryText { get => _batteryText; private set => Set(ref _batteryText, value); }

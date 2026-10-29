@@ -140,11 +140,17 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="17,3,0,0" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis">
-                                        <Run Text="{Binding ExtensionText, Mode=OneWay}" />
-                                        <Run Text=" · " />
-                                        <Run Text="{Binding BatteryText, Mode=OneWay}" />
-                                    </TextBlock>
+                                    <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="17,3,0,0" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding ExtensionText}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0"
+                                                    Visibility="{Binding HasBattery, Converter={StaticResource BoolToVis}}"
+                                                    ToolTip="Battery">
+                                            <TextBlock Text="{Binding BatteryPercent, Converter={StaticResource BatteryGlyph}}" Style="{StaticResource Icon}"
+                                                       FontSize="15" Margin="0,0,4,0"
+                                                       Foreground="{Binding BatteryPercent, Converter={StaticResource BatteryBrush}}" />
+                                            <TextBlock Text="{Binding BatteryText}" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </StackPanel>
                                     <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="17,2,0,0" Style="{StaticResource Caption}"
                                                Text="{Binding StatusText}" TextWrapping="Wrap"
                                                Visibility="{Binding IsConnected, Converter={StaticResource InverseBoolToVis}}" />
@@ -223,15 +229,25 @@
                                     <Button Content="Cancel" Command="{Binding CancelRenameCommand}" Focusable="False" Padding="10,5" VerticalAlignment="Center" />
                                 </StackPanel>
 
-                                <TextBlock Style="{StaticResource Caption}" Margin="0,6,0,0">
-                                    <Run Text="{Binding StatusText, Mode=OneWay}" />
-                                    <Run Text=" · " />
-                                    <Run Text="{Binding ExtensionText, Mode=OneWay}" />
-                                    <Run Text=" · Battery " />
-                                    <Run Text="{Binding BatteryText, Mode=OneWay}" />
-                                    <Run Text=" · " />
-                                    <Run Text="{Binding HardwareText, Mode=OneWay}" />
-                                </TextBlock>
+                                <WrapPanel Margin="0,6,0,0">
+                                    <TextBlock Style="{StaticResource Caption}">
+                                        <Run Text="{Binding StatusText, Mode=OneWay}" />
+                                        <Run Text=" · " />
+                                        <Run Text="{Binding ExtensionText, Mode=OneWay}" />
+                                        <Run Text=" · " />
+                                    </TextBlock>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0"
+                                                Visibility="{Binding HasBattery, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{Binding BatteryPercent, Converter={StaticResource BatteryGlyph}}" Style="{StaticResource Icon}"
+                                                   FontSize="15" Margin="0,0,4,0"
+                                                   Foreground="{Binding BatteryPercent, Converter={StaticResource BatteryBrush}}" />
+                                        <TextBlock Style="{StaticResource Caption}" VerticalAlignment="Center">
+                                            <Run Text="{Binding BatteryText, Mode=OneWay}" />
+                                            <Run Text=" · " />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding HardwareText}" Style="{StaticResource Caption}" />
+                                </WrapPanel>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                                 <Button Content="Identify" Command="{Binding IdentifyCommand}" Margin="0,0,6,0"

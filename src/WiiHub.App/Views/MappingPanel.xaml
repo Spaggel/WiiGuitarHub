@@ -132,9 +132,11 @@
 
                                     <CheckBox Grid.Column="6" IsChecked="{Binding Invert}" VerticalAlignment="Center" Margin="12,0,0,0" />
 
-                                    <Button Grid.Column="7" Content="✕" Style="{StaticResource IconButton}" HorizontalAlignment="Left"
+                                    <Button Grid.Column="7" Style="{StaticResource IconButton}" HorizontalAlignment="Left"
                                             Command="{Binding DataContext.RemoveBindingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                            ToolTip="Remove this binding" />
+                                            ToolTip="Remove this binding">
+                                        <TextBlock Text="&#xE711;" Style="{StaticResource Icon}" FontSize="12" />
+                                    </Button>
                                 </Grid>
                             </Border>
                         </DataTemplate>

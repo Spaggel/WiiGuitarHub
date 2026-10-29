@@ -40,6 +40,7 @@
             <local:BoolToBrushConverter x:Key="StarPowerBrush" On="#3B6FF5" Off="#EEF0F4" />
             <local:AxisToOffsetConverter x:Key="AxisToOffset" />
             <local:BatteryToBrushConverter x:Key="BatteryBrush" />
+            <local:BatteryToGlyphConverter x:Key="BatteryGlyph" />
             <local:HexToBrushConverter x:Key="HexBrush" />
 
             <!-- No implicit TextBlock style on purpose: it would override the foreground that

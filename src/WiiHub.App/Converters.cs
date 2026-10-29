@@ -87,6 +87,23 @@ public sealed class HexToBrushConverter : IValueConverter
         throw new NotSupportedException();
 }
 
+/// <summary>
+/// Battery percentage (0..100, or -1 when unknown) to a battery glyph from the Windows icon font
+/// (Segoe Fluent Icons / MDL2: Battery0 U+E850 … Battery10 U+E85A).
+/// </summary>
+public sealed class BatteryToGlyphConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not int p || p < 0) return string.Empty;
+        int step = (int)Math.Round(Math.Clamp(p, 0, 100) / 10.0); // 0..10
+        return ((char)(0xE850 + step)).ToString();
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
 /// <summary>Battery percentage (or -1 when unknown) to a colour.</summary>
 public sealed class BatteryToBrushConverter : IValueConverter
 {
