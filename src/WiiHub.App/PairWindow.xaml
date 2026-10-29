@@ -1,0 +1,83 @@
+<Window x:Class="WiiHub.App.PairWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pair a Wiimote"
+        Icon="Assets/wii-guitar-hub.ico"
+        Width="640" Height="680" MinWidth="520" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource WindowBg}" Foreground="{StaticResource TextBrush}"
+        FontFamily="Segoe UI" FontSize="13"
+        Closing="Window_Closing">
+    <DockPanel Margin="18">
+        <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <Button Content="Close" HorizontalAlignment="Right" Width="90" IsCancel="True" Click="Close_Click" />
+        </Grid>
+
+        <!-- Step 1: pair -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Pair a new Wiimote" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="{Binding BluetoothStatus}" Style="{StaticResource Caption}" Margin="0,0,0,10" TextWrapping="Wrap" />
+
+                <RadioButton GroupName="PairMode" IsChecked="{Binding PermanentMode}" Margin="0,0,0,4"
+                             Content="Permanent — red SYNC button (recommended, reconnects by itself)" />
+                <RadioButton GroupName="PairMode" IsChecked="{Binding TemporaryMode}" Margin="0,0,0,10"
+                             Content="Temporary — hold 1 + 2 (must pair again after power-off)" />
+
+                <Border Background="{StaticResource AccentSoft}" CornerRadius="8" Padding="12,10" Margin="0,0,0,12">
+                    <TextBlock Text="{Binding Instructions}" TextWrapping="Wrap" />
+                </Border>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Search &amp; pair" Command="{Binding StartCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" />
+                    <Button Content="Stop" Command="{Binding CancelCommand}" />
+                    <ProgressBar Width="140" Height="6" Margin="14,0,0,0" IsIndeterminate="True" VerticalAlignment="Center"
+                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+
+                <ListBox ItemsSource="{Binding Messages}" Height="150" Margin="0,12,0,0" BorderBrush="{StaticResource BorderBrush}"
+                         FontFamily="Consolas" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Step 2: known devices -->
+        <Border Style="{StaticResource Card}" Margin="0">
+            <DockPanel>
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <TextBlock Text="Wiimotes Windows already knows" Style="{StaticResource SectionTitle}" />
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                </Grid>
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="If a Wiimote was paired before (e.g. through Windows Settings or on a Wii), remove it here and pair it again with the SYNC button so it can reconnect by itself." />
+                <ItemsControl ItemsSource="{Binding KnownWiimotes}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="150" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Address}" FontFamily="Consolas" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding State}" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="3" Content="Remove" Style="{StaticResource DangerButton}"
+                                            Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</Window>

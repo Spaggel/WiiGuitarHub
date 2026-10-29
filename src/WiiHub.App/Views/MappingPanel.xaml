@@ -1,0 +1,146 @@
+<UserControl x:Class="WiiHub.App.Views.MappingPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Style="{StaticResource Card}" Padding="0">
+        <DockPanel>
+            <!-- Toolbar -->
+            <StackPanel DockPanel.Dock="Top" Margin="16,14,16,6">
+                <WrapPanel>
+                    <StackPanel Margin="0,0,14,8">
+                        <TextBlock Text="When this is plugged in" Style="{StaticResource Caption}" Margin="0,0,0,3" />
+                        <ComboBox Width="180" ItemsSource="{Binding MappingDeviceOptions}" SelectedValuePath="Value" DisplayMemberPath="Name"
+                                  SelectedValue="{Binding MappingDevice}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,14,8">
+                        <TextBlock Text="Edit the mapping for" Style="{StaticResource Caption}" Margin="0,0,0,3" />
+                        <ComboBox Width="180" ItemsSource="{Binding MappingOutputOptions}" SelectedValuePath="Value" DisplayMemberPath="Name"
+                                  SelectedValue="{Binding MappingOutput}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,8">
+                        <Button Content="+  Add binding" Command="{Binding AddBindingCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" />
+                        <Button Content="Reset to defaults" Command="{Binding ResetMappingCommand}" />
+                    </StackPanel>
+                </WrapPanel>
+                <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                           Text="Click “Detect” and press a button (or strum, or move the whammy) on the controller to pick the input. Rows light up while they are active, so you can test every binding right here. Several inputs may share one output." />
+            </StackPanel>
+
+            <!-- Column headers -->
+            <Grid DockPanel.Dock="Top" Margin="16,8,16,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="22" />
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="140" />
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" Text="INPUT" Style="{StaticResource Caption}" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="4" Text="OUTPUT" Style="{StaticResource Caption}" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="6" Text="INVERT" Style="{StaticResource Caption}" FontWeight="SemiBold"
+                           ToolTip="Reverse the direction: e.g. a button pushes a stick the other way, or a stick axis flips." />
+            </Grid>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8,0,8,8">
+                <ItemsControl ItemsSource="{Binding Bindings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Row colour follows the input: a fret row is tinted in its fret colour,
+                                 everything else in the accent blue. The stripe is always visible; the
+                                 whole row lights up while the input is pressed. -->
+                            <Border CornerRadius="8" Padding="6,5,8,5" Margin="0,3" BorderThickness="1">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="White" />
+                                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsListening}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+                                                <Setter Property="Background" Value="#F7F9FF" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="Background" Value="{Binding SoftColor, Converter={StaticResource HexBrush}}" />
+                                                <Setter Property="BorderBrush" Value="{Binding AccentColor, Converter={StaticResource HexBrush}}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="22" />
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="28" />
+                                        <ColumnDefinition Width="190" />
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Colour stripe: solid for frets, faint for other inputs, full when pressed -->
+                                    <Border Width="6" CornerRadius="3" HorizontalAlignment="Left" Margin="0,1"
+                                            Background="{Binding AccentColor, Converter={StaticResource HexBrush}}">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Opacity" Value="0.25" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFret}" Value="True">
+                                                        <Setter Property="Opacity" Value="0.85" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Opacity" Value="1" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                    </Border>
+
+                                    <ComboBox Grid.Column="1" Margin="0,0,8,0"
+                                              ItemsSource="{Binding DataContext.SourceOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              SelectedValuePath="Value" DisplayMemberPath="Name"
+                                              SelectedValue="{Binding Source}" />
+
+                                    <Button Grid.Column="2" Content="{Binding ListenText}" Margin="0,0,8,0"
+                                            Command="{Binding DataContext.ListenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                            ToolTip="Press a button on the controller to choose the input" />
+
+                                    <TextBlock Grid.Column="3" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="15">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource SubtleText}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Foreground" Value="{Binding AccentColor, Converter={StaticResource HexBrush}}" />
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <ComboBox Grid.Column="4" Margin="0,0,8,0"
+                                              ItemsSource="{Binding DataContext.TargetOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              SelectedValuePath="Value" DisplayMemberPath="Name"
+                                              SelectedValue="{Binding Target}" />
+
+                                    <Button Grid.Column="5" Content="{Binding CaptureText}" Margin="0,0,8,0"
+                                            Visibility="{Binding IsKeyboard, Converter={StaticResource BoolToVis}}"
+                                            Command="{Binding DataContext.CaptureKeyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                            ToolTip="Press the keyboard key this input should send (Esc cancels)" />
+
+                                    <CheckBox Grid.Column="6" IsChecked="{Binding Invert}" VerticalAlignment="Center" Margin="12,0,0,0" />
+
+                                    <Button Grid.Column="7" Content="✕" Style="{StaticResource IconButton}" HorizontalAlignment="Left"
+                                            Command="{Binding DataContext.RemoveBindingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                            ToolTip="Remove this binding" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

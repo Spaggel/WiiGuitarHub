@@ -1,0 +1,12 @@
+bin/
+obj/
+publish/
+.vs/
+.idea/
+*.user
+*.suo
+*.binlog
+build.log
+
+# Local notes
+src/WiiHub.App/Assets/icon-prompt.txt

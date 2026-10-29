@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>WiiHub.App</RootNamespace>
+    <AssemblyName>WiiHub</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Version>0.1.0</Version>
+    <Product>Wii Guitar Hub</Product>
+    <ApplicationIcon>Assets\wii-guitar-hub.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\wii-guitar-hub.ico" />
+    <Resource Include="Assets\wii-guitar-hub.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Talks to the ViGEmBus driver (virtual Xbox 360 controllers). -->
+    <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WiiHub.Core\WiiHub.Core.csproj" />
+    <ProjectReference Include="..\WiiHub.ViewModels\WiiHub.ViewModels.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,149 @@
+<UserControl x:Class="WiiHub.App.Views.GuitarPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="Fret" TargetType="Border">
+            <Setter Property="Width" Value="62" />
+            <Setter Property="Height" Value="62" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+        </Style>
+        <Style x:Key="TouchSegment" TargetType="Border">
+            <Setter Property="Width" Value="62" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+        </Style>
+        <Style x:Key="FretLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource Card}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="*" MinWidth="280" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ========== Frets, strum, buttons ========== -->
+            <StackPanel>
+                <TextBlock Text="Guitar" Style="{StaticResource SectionTitle}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource Fret}" Background="{StaticResource FretGreen}" Opacity="{Binding GreenOn, Converter={StaticResource LitOpacity}}">
+                        <TextBlock Text="GREEN" Style="{StaticResource FretLabel}" />
+                    </Border>
+                    <Border Style="{StaticResource Fret}" Background="{StaticResource FretRed}" Opacity="{Binding RedOn, Converter={StaticResource LitOpacity}}">
+                        <TextBlock Text="RED" Style="{StaticResource FretLabel}" />
+                    </Border>
+                    <Border Style="{StaticResource Fret}" Background="{StaticResource FretYellow}" Opacity="{Binding YellowOn, Converter={StaticResource LitOpacity}}">
+                        <TextBlock Text="YELLOW" Style="{StaticResource FretLabel}" />
+                    </Border>
+                    <Border Style="{StaticResource Fret}" Background="{StaticResource FretBlue}" Opacity="{Binding BlueOn, Converter={StaticResource LitOpacity}}">
+                        <TextBlock Text="BLUE" Style="{StaticResource FretLabel}" />
+                    </Border>
+                    <Border Style="{StaticResource Fret}" Background="{StaticResource FretOrange}" Opacity="{Binding OrangeOn, Converter={StaticResource LitOpacity}}">
+                        <TextBlock Text="ORANGE" Style="{StaticResource FretLabel}" />
+                    </Border>
+                </StackPanel>
+
+                <!-- GHWT touch / slider bar -->
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0" Visibility="{Binding TouchBarEnabled, Converter={StaticResource BoolToVis}}">
+                    <Border Style="{StaticResource TouchSegment}" Background="{StaticResource FretGreen}" Opacity="{Binding TouchGreenOn, Converter={StaticResource LitOpacity}}" />
+                    <Border Style="{StaticResource TouchSegment}" Background="{StaticResource FretRed}" Opacity="{Binding TouchRedOn, Converter={StaticResource LitOpacity}}" />
+                    <Border Style="{StaticResource TouchSegment}" Background="{StaticResource FretYellow}" Opacity="{Binding TouchYellowOn, Converter={StaticResource LitOpacity}}" />
+                    <Border Style="{StaticResource TouchSegment}" Background="{StaticResource FretBlue}" Opacity="{Binding TouchBlueOn, Converter={StaticResource LitOpacity}}" />
+                    <Border Style="{StaticResource TouchSegment}" Background="{StaticResource FretOrange}" Opacity="{Binding TouchOrangeOn, Converter={StaticResource LitOpacity}}" />
+                </StackPanel>
+                <TextBlock Text="Touch bar" Style="{StaticResource Caption}" Margin="0,3,0,0"
+                           Visibility="{Binding TouchBarEnabled, Converter={StaticResource BoolToVis}}" />
+
+                <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                    <!-- Strum bar -->
+                    <StackPanel Margin="0,0,24,0">
+                        <TextBlock Text="Strum bar" Style="{StaticResource Caption}" Margin="3,0,0,4" />
+                        <ContentControl Style="{StaticResource Pill}" Content="▲  Up" Tag="{Binding StrumUpOn}" Width="110" Height="36" />
+                        <ContentControl Style="{StaticResource Pill}" Content="▼  Down" Tag="{Binding StrumDownOn}" Width="110" Height="36" />
+                    </StackPanel>
+
+                    <!-- Buttons -->
+                    <StackPanel Margin="0,0,24,0">
+                        <TextBlock Text="Buttons" Style="{StaticResource Caption}" Margin="3,0,0,4" />
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Style="{StaticResource Pill}" Content="−" Tag="{Binding GuitarMinusOn}" ToolTip="Minus / Star Power (GHWT)" />
+                            <ContentControl Style="{StaticResource Pill}" Content="+" Tag="{Binding GuitarPlusOn}" ToolTip="Plus / Start" />
+                        </StackPanel>
+                        <ContentControl Style="{StaticResource Pill}" Content="STAR POWER" Tag="{Binding TiltOn}" ToolTip="Tilt detected" />
+                    </StackPanel>
+
+                    <!-- Stick -->
+                    <StackPanel>
+                        <TextBlock Text="Stick" Style="{StaticResource Caption}" Margin="0,0,0,4" />
+                        <Border Width="76" Height="76" CornerRadius="38" Background="{StaticResource PillOff}">
+                            <Canvas Width="76" Height="76">
+                                <Ellipse Width="16" Height="16" Fill="{StaticResource Accent}"
+                                         Canvas.Left="{Binding StickX, Converter={StaticResource AxisToOffset}, ConverterParameter=60}"
+                                         Canvas.Top="{Binding StickY, Converter={StaticResource AxisToOffset}, ConverterParameter=-60}" />
+                            </Canvas>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ========== Whammy & tilt ========== -->
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Whammy bar" Style="{StaticResource SectionTitle}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="46" />
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar Maximum="100" Value="{Binding WhammyPercent, Mode=OneWay}" Height="14" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center">
+                        <Run Text="{Binding WhammyPercent, Mode=OneWay}" /><Run Text="%" />
+                    </TextBlock>
+                </Grid>
+
+                <TextBlock Text="Tilt (Star Power)" Style="{StaticResource SectionTitle}" Margin="0,22,0,10" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="46" />
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar Maximum="100" Value="{Binding TiltPercent, Mode=OneWay}" Height="14" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center">
+                        <Run Text="{Binding TiltPercent, Mode=OneWay}" /><Run Text="%" />
+                    </TextBlock>
+                </Grid>
+
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="46" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Trigger at" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <Slider Grid.Column="1" Minimum="15" Maximum="90" TickFrequency="5" IsSnapToTickEnabled="True"
+                            Value="{Binding TiltThresholdPercent}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" TextAlignment="Right" VerticalAlignment="Center">
+                        <Run Text="{Binding TiltThresholdPercent, Mode=OneWay}" /><Run Text="%" />
+                    </TextBlock>
+                </Grid>
+
+                <TextBlock Text="{Binding TiltCalibrationText}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,10,0,6" />
+                <TextBlock Text="{Binding TiltStepText}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Rest" Command="{Binding CalibrateRestCommand}" Margin="0,0,6,0" />
+                    <Button Content="Tilted" Command="{Binding CalibrateTiltedCommand}" Margin="0,0,6,0" />
+                    <Button Content="Reset" Command="{Binding ResetTiltCommand}" Style="{StaticResource IconButton}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
