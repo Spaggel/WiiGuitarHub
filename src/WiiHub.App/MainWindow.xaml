@@ -6,8 +6,8 @@
         Icon="Assets/wii-guitar-hub.ico"
         Width="1220" Height="800" MinWidth="1000" MinHeight="640"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource WindowBg}"
-        Foreground="{StaticResource TextBrush}"
+        Background="{DynamicResource WindowBg}"
+        Foreground="{DynamicResource TextBrush}"
         FontFamily="Segoe UI" FontSize="13"
         PreviewKeyDown="Window_PreviewKeyDown">
 
@@ -18,7 +18,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- ============================== Sidebar ============================== -->
-        <Border Grid.Column="0" Background="{StaticResource SidebarBg}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+        <Border Grid.Column="0" Background="{DynamicResource SidebarBg}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="18,18,18,10">
                     <StackPanel Orientation="Horizontal">
@@ -83,16 +83,16 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="ListBoxItem">
                                             <Border x:Name="Bd" CornerRadius="9" Padding="12,10" Background="Transparent"
-                                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                                                 <ContentPresenter />
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentSoft}" />
-                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Accent}" />
+                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSoft}" />
+                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Accent}" />
                                                 </Trigger>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Accent}" />
+                                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Accent}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -174,7 +174,7 @@
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="460"
                         Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}">
                 <TextBlock Text="Connect your first Wiimote" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                <TextBlock TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,18" Foreground="{StaticResource SubtleText}"
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,18" Foreground="{DynamicResource SubtleText}"
                            Text="Click “Pair a Wiimote”, then press the red SYNC button under the battery cover. After that the Wiimote reconnects on its own whenever you press a button — also after changing batteries. Plug your Guitar Hero guitar into the Wiimote and it is detected automatically." />
                 <Button Content="+  Pair a Wiimote" Command="{Binding PairCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Center" />
             </StackPanel>
@@ -195,7 +195,7 @@
                                 <StackPanel Orientation="Horizontal"
                                             Visibility="{Binding IsRenaming, Converter={StaticResource InverseBoolToVis}}">
                                     <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"
-                                               TextTrimming="CharacterEllipsis" MaxWidth="460" Foreground="{StaticResource TextBrush}" />
+                                               TextTrimming="CharacterEllipsis" MaxWidth="460" Foreground="{DynamicResource TextBrush}" />
                                     <Button Content="✎  Rename" Command="{Binding StartRenameCommand}" Margin="12,0,0,0"
                                             Padding="10,4" VerticalAlignment="Center" ToolTip="Give this Wiimote a name, e.g. “Red guitar” (F2)" />
                                 </StackPanel>
@@ -205,7 +205,7 @@
                                     <Grid Width="340">
                                         <TextBox x:Name="RenameBox" Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
                                                  FontSize="18" FontWeight="SemiBold" MaxLength="40"
-                                                 BorderBrush="{StaticResource Accent}" BorderThickness="0,0,0,2" Background="Transparent"
+                                                 BorderBrush="{DynamicResource Accent}" BorderThickness="0,0,0,2" Background="Transparent"
                                                  IsVisibleChanged="RenameBox_IsVisibleChanged"
                                                  LostKeyboardFocus="RenameBox_LostKeyboardFocus">
                                             <TextBox.InputBindings>
@@ -215,7 +215,7 @@
                                         </TextBox>
                                         <!-- Placeholder while the box is empty -->
                                         <TextBlock Text="{Binding NamePlaceholder}" IsHitTestVisible="False" Margin="4,0,0,2"
-                                                   VerticalAlignment="Center" Foreground="{StaticResource SubtleText}" FontSize="13"
+                                                   VerticalAlignment="Center" Foreground="{DynamicResource SubtleText}" FontSize="13"
                                                    TextTrimming="CharacterEllipsis">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -282,16 +282,16 @@
                                           SelectedValue="{Binding PlayerIndex}" />
                             </StackPanel>
                             <StackPanel VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0,0,0,12">
-                                <CheckBox Content="Forward rumble" IsChecked="{Binding ForwardRumble}"
+                                <CheckBox Content="Forward rumble" Margin="0,0,18,0" IsChecked="{Binding ForwardRumble}"
                                           ToolTip="Games can rumble the Wiimote through the virtual Xbox controller" />
-                                <CheckBox Content="Keep Xbox controller during battery swap" IsChecked="{Binding KeepVirtualPad}"
+                                <CheckBox Content="Keep Xbox controller during battery swap" Margin="0,0,18,0" IsChecked="{Binding KeepVirtualPad}"
                                           ToolTip="The game keeps the same player slot while the Wiimote is briefly gone" />
                                 <CheckBox Content="Touch bar as frets" IsChecked="{Binding TouchBarEnabled}"
                                           ToolTip="Guitar Hero World Tour slider bar (ignored on GH3 guitars)" />
                             </StackPanel>
                         </WrapPanel>
 
-                        <Border Background="{StaticResource Warning}" CornerRadius="7" Padding="10,7" Margin="0,4,0,0"
+                        <Border Background="{DynamicResource Warning}" CornerRadius="7" Padding="10,7" Margin="0,4,0,0"
                                 Visibility="{Binding HasOutputError, Converter={StaticResource BoolToVis}}">
                             <TextBlock Text="{Binding OutputError}" TextWrapping="Wrap" />
                         </Border>
@@ -324,7 +324,7 @@
                                             <TextBlock Grid.Row="1" Text="Keyboard" Style="{StaticResource Caption}" Margin="0,0,0,6" />
                                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding KeysOutputText}" FontFamily="Consolas" TextWrapping="Wrap" />
                                             <TextBlock Grid.Row="2" Text="Raw" Style="{StaticResource Caption}" />
-                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding RawText}" FontFamily="Consolas" Foreground="{StaticResource SubtleText}" TextWrapping="Wrap" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding RawText}" FontFamily="Consolas" Foreground="{DynamicResource SubtleText}" TextWrapping="Wrap" />
                                         </Grid>
                                     </StackPanel>
                                 </Border>

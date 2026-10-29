@@ -61,7 +61,11 @@ public sealed class AxisToOffsetConverter : IValueConverter
         throw new NotSupportedException();
 }
 
-/// <summary>"#RRGGBB" string to a (cached, frozen) brush. Unknown values give a transparent brush.</summary>
+/// <summary>
+/// "#RRGGBB" string to a (cached, frozen) brush. An optional ConverterParameter is the opacity
+/// (0..1), e.g. a light tint of a fret colour that works on both light and dark backgrounds.
+/// Unknown values give a transparent brush.
+/// </summary>
 public sealed class HexToBrushConverter : IValueConverter
 {
     private static readonly Dictionary<string, Brush> Cache = new(StringComparer.OrdinalIgnoreCase);
@@ -69,17 +73,25 @@ public sealed class HexToBrushConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is not string hex || string.IsNullOrWhiteSpace(hex)) return Brushes.Transparent;
-        if (Cache.TryGetValue(hex, out var cached)) return cached;
-        try
+        double opacity = 1;
+        if (parameter is string p && double.TryParse(p, NumberStyles.Float, CultureInfo.InvariantCulture, out var o))
+            opacity = Math.Clamp(o, 0, 1);
+
+        string key = $"{hex}|{opacity:0.###}";
+        lock (Cache)
         {
-            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-            brush.Freeze();
-            Cache[hex] = brush;
-            return brush;
-        }
-        catch (FormatException)
-        {
-            return Brushes.Transparent;
+            if (Cache.TryGetValue(key, out var cached)) return cached;
+            try
+            {
+                var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex)) { Opacity = opacity };
+                brush.Freeze();
+                Cache[key] = brush;
+                return brush;
+            }
+            catch (FormatException)
+            {
+                return Brushes.Transparent;
+            }
         }
     }
 

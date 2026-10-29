@@ -85,9 +85,9 @@
                     <!-- Stick -->
                     <StackPanel>
                         <TextBlock Text="Stick" Style="{StaticResource Caption}" Margin="0,0,0,4" />
-                        <Border Width="76" Height="76" CornerRadius="38" Background="{StaticResource PillOff}">
+                        <Border Width="76" Height="76" CornerRadius="38" Background="{DynamicResource PillOff}">
                             <Canvas Width="76" Height="76">
-                                <Ellipse Width="16" Height="16" Fill="{StaticResource Accent}"
+                                <Ellipse Width="16" Height="16" Fill="{DynamicResource Accent}"
                                          Canvas.Left="{Binding StickX, Converter={StaticResource AxisToOffset}, ConverterParameter=60}"
                                          Canvas.Top="{Binding StickY, Converter={StaticResource AxisToOffset}, ConverterParameter=-60}" />
                             </Canvas>

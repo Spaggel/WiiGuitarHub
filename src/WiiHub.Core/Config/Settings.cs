@@ -16,6 +16,15 @@ public enum OutputMode
 
 public enum AccelAxis { X, Y, Z }
 
+/// <summary>Colour theme of the app.</summary>
+public enum AppTheme
+{
+    /// <summary>Follow Windows' light/dark app mode.</summary>
+    System,
+    Light,
+    Dark,
+}
+
 /// <summary>
 /// Guitar tilt (Star Power) is measured with the Wiimote's accelerometer, because the Wiimote
 /// sits inside the guitar body. Calibrate by recording "rest" and "tilted" readings.
@@ -96,6 +105,8 @@ public sealed class AppConfig
 
     /// <summary>The window's close button hides it to the tray instead of exiting.</summary>
     public bool CloseToTray { get; set; }
+
+    public AppTheme Theme { get; set; } = AppTheme.System;
 
     /// <summary>Show a Windows notification when a Wiimote's battery runs low.</summary>
     public bool LowBatteryNotify { get; set; } = true;

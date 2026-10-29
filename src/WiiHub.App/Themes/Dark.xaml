@@ -1,0 +1,17 @@
+<!-- Dark palette (same keys as Light.xaml). -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="WindowBg" Color="#1A1C21" />
+    <SolidColorBrush x:Key="CardBg" Color="#24272E" />
+    <SolidColorBrush x:Key="SidebarBg" Color="#202329" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#363B45" />
+    <SolidColorBrush x:Key="TextBrush" Color="#E8EAEE" />
+    <SolidColorBrush x:Key="SubtleText" Color="#9AA1AD" />
+    <SolidColorBrush x:Key="Accent" Color="#4C7DFF" />
+    <SolidColorBrush x:Key="AccentSoft" Color="#26324F" />
+    <SolidColorBrush x:Key="Danger" Color="#FF6B70" />
+    <SolidColorBrush x:Key="Ok" Color="#3CCB86" />
+    <SolidColorBrush x:Key="PillOff" Color="#30343C" />
+    <SolidColorBrush x:Key="PillOffText" Color="#B4BAC4" />
+    <SolidColorBrush x:Key="Warning" Color="#3D3420" />
+</ResourceDictionary>

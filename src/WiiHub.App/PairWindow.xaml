@@ -5,7 +5,7 @@
         Icon="Assets/wii-guitar-hub.ico"
         Width="640" Height="760" MinWidth="520" MinHeight="420"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
-        Background="{StaticResource WindowBg}" Foreground="{StaticResource TextBrush}"
+        Background="{DynamicResource WindowBg}" Foreground="{DynamicResource TextBrush}"
         FontFamily="Segoe UI" FontSize="13"
         Closing="Window_Closing">
     <DockPanel Margin="18">
@@ -30,7 +30,7 @@
                 <RadioButton GroupName="PairMode" IsChecked="{Binding TemporaryMode}" Margin="0,0,0,10"
                              Content="Temporary — hold 1 + 2 (must pair again after power-off)" />
 
-                <Border Background="{StaticResource AccentSoft}" CornerRadius="8" Padding="12,10" Margin="0,0,0,12">
+                <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="12,10" Margin="0,0,0,12">
                     <TextBlock Text="{Binding Instructions}" TextWrapping="Wrap" />
                 </Border>
 
@@ -41,7 +41,7 @@
                                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
 
-                <ListBox ItemsSource="{Binding Messages}" MinHeight="60" MaxHeight="150" Margin="0,12,0,0" BorderBrush="{StaticResource BorderBrush}"
+                <ListBox ItemsSource="{Binding Messages}" MinHeight="60" MaxHeight="150" Margin="0,12,0,0" BorderBrush="{DynamicResource BorderBrush}"
                          FontFamily="Consolas" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -64,7 +64,7 @@
                 <ItemsControl ItemsSource="{Binding KnownWiimotes}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,6">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />

@@ -34,6 +34,8 @@ public sealed class UiServices : IUiServices
             MessageBox.Show(Owner, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
+    public void ApplyTheme(WiiHub.Core.Config.AppTheme theme) => ThemeManager.Apply(theme);
+
     public void ShowNotification(string title, string message, bool warning) =>
         Tray?.ShowNotification(title, message, warning);
 

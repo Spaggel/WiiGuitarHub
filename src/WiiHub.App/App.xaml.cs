@@ -45,6 +45,8 @@ public partial class App : Application
         Log.IncludeDebug = config.ShowDebugLog;
         Log.Info($"Settings: {store.Path}");
 
+        ThemeManager.Apply(config.Theme);
+
         _padFactory = new ViGEmPadFactory();
         _hub = new ControllerHub(config, store, _padFactory);
 

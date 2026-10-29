@@ -175,6 +175,30 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    // ------------------------------------------------------------------ theme
+
+    private static readonly IReadOnlyList<Option<AppTheme>> s_themeOptions =
+    [
+        new(AppTheme.System, "Follow Windows"),
+        new(AppTheme.Light, "Light"),
+        new(AppTheme.Dark, "Dark"),
+    ];
+
+    public IReadOnlyList<Option<AppTheme>> ThemeOptions => s_themeOptions;
+
+    public AppTheme Theme
+    {
+        get => Hub.Config.Theme;
+        set
+        {
+            if (Hub.Config.Theme == value) return;
+            Hub.Config.Theme = value;
+            Raise();
+            Hub.RequestSave();
+            Ui.ApplyTheme(value);
+        }
+    }
+
     // ------------------------------------------------------------------ low battery
 
     public bool LowBatteryNotify

@@ -5,9 +5,9 @@
         <StackPanel>
             <TextBlock Text="Nunchuk" Style="{StaticResource SectionTitle}" />
             <StackPanel Orientation="Horizontal">
-                <Border Width="76" Height="76" CornerRadius="38" Background="{StaticResource PillOff}" Margin="0,0,24,0">
+                <Border Width="76" Height="76" CornerRadius="38" Background="{DynamicResource PillOff}" Margin="0,0,24,0">
                     <Canvas Width="76" Height="76">
-                        <Ellipse Width="16" Height="16" Fill="{StaticResource Accent}"
+                        <Ellipse Width="16" Height="16" Fill="{DynamicResource Accent}"
                                  Canvas.Left="{Binding NunchukStickX, Converter={StaticResource AxisToOffset}, ConverterParameter=60}"
                                  Canvas.Top="{Binding NunchukStickY, Converter={StaticResource AxisToOffset}, ConverterParameter=-60}" />
                     </Canvas>

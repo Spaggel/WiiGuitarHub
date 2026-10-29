@@ -65,6 +65,8 @@ public interface IUiServices
 
     void ShowSettingsWindow(MainViewModel viewModel);
 
+    void ApplyTheme(WiiHub.Core.Config.AppTheme theme);
+
     void ShowLogWindow(MainViewModel viewModel);
 }
 
