@@ -98,8 +98,20 @@ reconnect by itself. Fix it like this:
 | Turn one Wiimote off | Click **Turn off** in the header, or right-click it in the list → **Turn off**. |
 | Turn all Wiimotes off | Click **Turn off all** in the sidebar. |
 | Save batteries automatically | At the bottom of the sidebar, choose when idle Wiimotes switch off: never, or after 5, 10 (default), 15 or 30 minutes, or 1 hour. |
+| Start Wii Guitar Hub automatically | Tick **Start with Windows** at the bottom of the sidebar. Tick **Start minimized** to keep the window out of the way. |
 
 Turning a Wiimote off keeps it paired. Press any button to turn it on again.
+
+### Dedicated Clone Hero / YARG PC
+
+For a PC that's only used for playing:
+
+1. Tick **Start with Windows** and **Start minimized**.
+2. Optionally, set **Turn off idle Wiimotes** so the guitars switch off when nobody plays.
+
+After logging in, Wii Guitar Hub starts by itself. Pick up a guitar, press a button, and it connects.
+Starting Wii Guitar Hub again while it's already running just brings the open window to the front.
+You can also switch the automatic start off in Task Manager → **Startup apps**.
 
 Wii Guitar Hub must be running for the controllers to work. Leave it open, or minimise it while you play.
 

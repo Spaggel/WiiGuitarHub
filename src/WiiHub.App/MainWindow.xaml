@@ -47,6 +47,11 @@
                     <ComboBox ItemsSource="{Binding AutoOffOptions}" SelectedValuePath="Value" DisplayMemberPath="Name"
                               SelectedValue="{Binding AutoOffMinutes}" Margin="0,4,0,14"
                               ToolTip="Saves batteries: a Wiimote nobody touched for this long is switched off. Press a button to turn it on again." />
+                    <CheckBox Content="Start with Windows" IsChecked="{Binding StartWithWindows}" Margin="0,0,0,6"
+                              ToolTip="Start Wii Guitar Hub automatically when you log in. Handy for a dedicated Clone Hero / YARG PC." />
+                    <CheckBox Content="Start minimized" IsChecked="{Binding StartMinimized}" Margin="20,0,0,14"
+                              IsEnabled="{Binding StartWithWindows}"
+                              ToolTip="When started with Windows, keep the window minimized on the taskbar." />
                     <TextBlock Text="BLUETOOTH" Style="{StaticResource Caption}" FontWeight="SemiBold" />
                     <TextBlock Text="{Binding BluetoothStatus}" TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,2,0,10" />
                     <TextBlock Text="XBOX 360 OUTPUT" Style="{StaticResource Caption}" FontWeight="SemiBold" />

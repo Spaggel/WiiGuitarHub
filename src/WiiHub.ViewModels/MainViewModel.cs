@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using WiiHub.Core;
 using WiiHub.Core.Bluetooth;
+using WiiHub.Core.Config;
 using WiiHub.Core.Controllers;
 
 namespace WiiHub.ViewModels;
@@ -55,6 +56,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             XboxAvailable = false;
             XboxStatus = "ViGEmBus driver not found — Xbox 360 output disabled. Keyboard output still works.";
         }
+
+        var autostart = Autostart.Read();
+        _startWithWindows = autostart.Enabled;
+        _startMinimized = !autostart.Enabled || autostart.Minimized; // default: minimized
 
         Task.Run(() =>
         {
@@ -119,6 +124,55 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             Hub.Config.AutoOffMinutes = Math.Max(0, value);
             Raise();
             Hub.RequestSave();
+        }
+    }
+
+    // ------------------------------------------------------------------ start with Windows
+
+    private bool _startWithWindows;
+    private bool _startMinimized;
+
+    /// <summary>Start the app when the user logs in (handy for dedicated Clone Hero / YARG PCs).</summary>
+    public bool StartWithWindows
+    {
+        get => _startWithWindows;
+        set
+        {
+            if (_startWithWindows == value) return;
+            if (!ApplyAutostart(value, _startMinimized)) return;
+            _startWithWindows = value;
+            Raise();
+        }
+    }
+
+    /// <summary>When started with Windows, start with the window minimised.</summary>
+    public bool StartMinimized
+    {
+        get => _startMinimized;
+        set
+        {
+            if (_startMinimized == value) return;
+            if (_startWithWindows && !ApplyAutostart(true, value)) return;
+            _startMinimized = value;
+            Raise();
+        }
+    }
+
+    private bool ApplyAutostart(bool enabled, bool minimized)
+    {
+        try
+        {
+            Autostart.Set(enabled, minimized);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Could not change the startup setting: {ex.Message}");
+            Ui.ShowError("Start with Windows", $"Could not change the startup setting: {ex.Message}");
+            // The checkbox already flipped in the UI; tell it to flip back.
+            Raise(nameof(StartWithWindows));
+            Raise(nameof(StartMinimized));
+            return false;
         }
     }
     public RelayCommand ClearLogCommand { get; }

@@ -15,10 +15,26 @@ public partial class App : Application
     private MainViewModel? _viewModel;
     private DispatcherTimer? _uiTimer;
 
+    // Only one copy may run: two copies would fight over the same Wiimotes.
+    private const string InstanceMutexName = @"Local\WiiGuitarHub.Instance";
+    private const string ActivateEventName = @"Local\WiiGuitarHub.Activate";
+    private Mutex? _instanceMutex;
+    private EventWaitHandle? _activateEvent;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        if (!ClaimSingleInstance())
+        {
+            // Already running (e.g. started with Windows): bring that window to the front instead.
+            Shutdown();
+            return;
+        }
+
         DispatcherUnhandledException += OnUnhandledException;
+        bool startMinimized = e.Args.Any(a => a.Equals(Autostart.MinimizedArg, StringComparison.OrdinalIgnoreCase));
+        Autostart.RepairPath();
 
         var store = new ConfigStore();
         AppConfig config = store.Load();
@@ -34,6 +50,7 @@ public partial class App : Application
         var window = new MainWindow { DataContext = _viewModel };
         ui.Owner = window;
         MainWindow = window;
+        if (startMinimized) window.WindowState = WindowState.Minimized;
         window.Show();
 
         _hub.Start();
@@ -54,7 +71,59 @@ public partial class App : Application
         _viewModel?.Dispose();
         _hub?.Dispose();
         _padFactory?.Dispose();
+        _activateEvent?.Dispose();
+        _instanceMutex?.Dispose();
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// Returns false when another copy is already running; that copy is asked to show its window.
+    /// </summary>
+    private bool ClaimSingleInstance()
+    {
+        _instanceMutex = new Mutex(initiallyOwned: true, InstanceMutexName, out bool createdNew);
+        if (!createdNew)
+        {
+            try
+            {
+                using var activate = EventWaitHandle.OpenExisting(ActivateEventName);
+                activate.Set();
+            }
+            catch (WaitHandleCannotBeOpenedException) { /* the other copy is still starting or closing */ }
+            _instanceMutex.Dispose();
+            _instanceMutex = null;
+            return false;
+        }
+
+        var activateEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ActivateEventName);
+        _activateEvent = activateEvent;
+        var listener = new Thread(() =>
+        {
+            try
+            {
+                while (activateEvent.WaitOne())
+                    Dispatcher.InvokeAsync(BringToFront);
+            }
+            catch (ObjectDisposedException) { /* shutting down */ }
+        })
+        {
+            IsBackground = true,
+            Name = "Single-instance listener",
+        };
+        listener.Start();
+        return true;
+    }
+
+    private void BringToFront()
+    {
+        if (MainWindow is not { } window) return;
+        if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
+        window.Show();
+        window.Activate();
+        // Windows only lets a background app steal focus briefly; topmost toggling makes it visible.
+        window.Topmost = true;
+        window.Topmost = false;
+        window.Focus();
     }
 
     private void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
