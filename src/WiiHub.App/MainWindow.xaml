@@ -43,15 +43,20 @@
 
                 <!-- Status of the drivers at the bottom of the sidebar -->
                 <StackPanel DockPanel.Dock="Bottom" Margin="18,10,18,16">
-                    <TextBlock Text="TURN OFF IDLE WIIMOTES" Style="{StaticResource Caption}" FontWeight="SemiBold" />
-                    <ComboBox ItemsSource="{Binding AutoOffOptions}" SelectedValuePath="Value" DisplayMemberPath="Name"
-                              SelectedValue="{Binding AutoOffMinutes}" Margin="0,4,0,14"
-                              ToolTip="Saves batteries: a Wiimote nobody touched for this long is switched off. Press a button to turn it on again." />
-                    <CheckBox Content="Start with Windows" IsChecked="{Binding StartWithWindows}" Margin="0,0,0,6"
-                              ToolTip="Start Wii Guitar Hub automatically when you log in. Handy for a dedicated Clone Hero / YARG PC." />
-                    <CheckBox Content="Start minimized" IsChecked="{Binding StartMinimized}" Margin="20,0,0,14"
-                              IsEnabled="{Binding StartWithWindows}"
-                              ToolTip="When started with Windows, keep the window minimized on the taskbar." />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Button Command="{Binding OpenSettingsCommand}" Margin="0,0,6,0" ToolTip="Auto-off, startup and other settings">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE713;" Style="{StaticResource Icon}" Margin="0,1,6,0" />
+                                <TextBlock Text="Settings" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding OpenLogCommand}" ToolTip="What Wii Guitar Hub is doing: pairing steps, connects, errors">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE9D9;" Style="{StaticResource Icon}" Margin="0,1,6,0" />
+                                <TextBlock Text="Log" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                     <TextBlock Text="BLUETOOTH" Style="{StaticResource Caption}" FontWeight="SemiBold" />
                     <TextBlock Text="{Binding BluetoothStatus}" TextWrapping="Wrap" Style="{StaticResource Caption}" Margin="0,2,0,10" />
                     <TextBlock Text="XBOX 360 OUTPUT" Style="{StaticResource Caption}" FontWeight="SemiBold" />
@@ -331,16 +336,6 @@
                         <views:MappingPanel />
                     </TabItem>
 
-                    <TabItem Header="Log">
-                        <Border Style="{StaticResource Card}" Padding="0">
-                            <DockPanel>
-                                <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="10" Content="Clear"
-                                        Command="{Binding DataContext.ClearLogCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                <ListBox x:Name="LogList" BorderThickness="0" FontFamily="Consolas" FontSize="12" Padding="6"
-                                         ItemsSource="{Binding DataContext.LogLines, RelativeSource={RelativeSource AncestorType=Window}}" />
-                            </DockPanel>
-                        </Border>
-                    </TabItem>
                 </TabControl>
             </DockPanel>
         </Grid>

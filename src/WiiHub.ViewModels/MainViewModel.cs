@@ -43,6 +43,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Log.EntryAdded += OnLog;
 
         PairCommand = new RelayCommand(() => Ui.ShowPairWindow(new PairViewModel(Ui)));
+        OpenSettingsCommand = new RelayCommand(() => Ui.ShowSettingsWindow(this));
+        OpenLogCommand = new RelayCommand(() => Ui.ShowLogWindow(this));
         TurnOffAllCommand = new RelayCommand(TurnOffAll, () => _anyConnected && !_turningOffAll);
         ClearLogCommand = new RelayCommand(LogLines.Clear);
 
@@ -79,6 +81,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<string> LogLines { get; } = [];
 
     public RelayCommand PairCommand { get; }
+    public RelayCommand OpenSettingsCommand { get; }
+    public RelayCommand OpenLogCommand { get; }
     public RelayCommand TurnOffAllCommand { get; }
 
     // ------------------------------------------------------------------ turning off

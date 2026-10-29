@@ -1,4 +1,3 @@
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,22 +12,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        DataContextChanged += OnDataContextChanged;
     }
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
-
-    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-    {
-        if (e.OldValue is MainViewModel oldVm) oldVm.LogLines.CollectionChanged -= OnLogChanged;
-        if (e.NewValue is MainViewModel newVm) newVm.LogLines.CollectionChanged += OnLogChanged;
-    }
-
-    private void OnLogChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action != NotifyCollectionChangedAction.Add || LogList.Items.Count == 0) return;
-        LogList.ScrollIntoView(LogList.Items[LogList.Items.Count - 1]);
-    }
 
     /// <summary>"Press key" in the mapping editor: the next key press becomes the binding's target.</summary>
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

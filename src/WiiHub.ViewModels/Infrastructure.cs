@@ -59,6 +59,10 @@ public interface IUiServices
     void ShowError(string title, string message);
 
     void ShowPairWindow(PairViewModel viewModel);
+
+    void ShowSettingsWindow(MainViewModel viewModel);
+
+    void ShowLogWindow(MainViewModel viewModel);
 }
 
 /// <summary>A value plus the text shown for it in a ComboBox.</summary>

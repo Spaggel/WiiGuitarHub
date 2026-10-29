@@ -1,0 +1,46 @@
+<Window x:Class="WiiHub.App.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings"
+        Icon="Assets/wii-guitar-hub.ico"
+        Width="560" Height="640" MinWidth="460" MinHeight="380"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{DynamicResource WindowBg}" Foreground="{DynamicResource TextBrush}"
+        FontFamily="Segoe UI" FontSize="13">
+    <DockPanel Margin="18">
+        <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <TextBlock Text="Changes are saved automatically." Style="{StaticResource Caption}" VerticalAlignment="Center" />
+            <Button Content="Close" HorizontalAlignment="Right" Width="90" IsCancel="True" IsDefault="True" Click="Close_Click" />
+        </Grid>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,6,0" Focusable="False">
+            <StackPanel x:Name="Sections">
+
+                <!-- Power -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Saving batteries" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="Turn off idle Wiimotes" Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding AutoOffOptions}" SelectedValuePath="Value" DisplayMemberPath="Name"
+                                  SelectedValue="{Binding AutoOffMinutes}" Width="220" HorizontalAlignment="Left" />
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                   Text="A Wiimote nobody touched for this long is switched off. It stays paired: press any button to turn it on again." />
+                    </StackPanel>
+                </Border>
+
+                <!-- Startup -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Startup" Style="{StaticResource SectionTitle}" />
+                        <CheckBox Content="Start with Windows" IsChecked="{Binding StartWithWindows}" Margin="0,0,0,6" />
+                        <CheckBox Content="Start minimized" IsChecked="{Binding StartMinimized}" Margin="22,0,0,0"
+                                  IsEnabled="{Binding StartWithWindows}" />
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Text="Handy for a dedicated Clone Hero / YARG PC: Wii Guitar Hub starts when you log in, and your guitars connect as soon as you press a button." />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>
