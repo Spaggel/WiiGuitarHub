@@ -34,6 +34,9 @@ public sealed class UiServices : IUiServices
             MessageBox.Show(Owner, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
+    public void ShowNotification(string title, string message, bool warning) =>
+        Tray?.ShowNotification(title, message, warning);
+
     private LogWindow? _logWindow;
 
     public void ShowSettingsWindow(MainViewModel viewModel)

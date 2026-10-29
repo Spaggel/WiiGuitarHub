@@ -30,6 +30,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             var vm = AddSlot(slot);
             Selected ??= vm;
         });
+        hub.LowBattery += (slot, percent) =>
+        {
+            if (!Hub.Config.LowBatteryNotify) return;
+            ui.Post(() => Ui.ShowNotification(
+                $"{slot.Config.Name}: battery low",
+                $"Battery at {percent}%. Replace the Wiimote's batteries soon.",
+                warning: true));
+        };
         hub.SlotRemoved += slot => ui.Post(() =>
         {
             var vm = Controllers.FirstOrDefault(c => c.Slot == slot);
@@ -166,6 +174,34 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             return total == 0 ? "No controllers paired" : $"{connected} of {total} connected";
         }
     }
+
+    // ------------------------------------------------------------------ low battery
+
+    public bool LowBatteryNotify
+    {
+        get => Hub.Config.LowBatteryNotify;
+        set
+        {
+            if (Hub.Config.LowBatteryNotify == value) return;
+            Hub.Config.LowBatteryNotify = value;
+            Raise();
+            Hub.RequestSave();
+        }
+    }
+
+    public bool LowBatteryRumble
+    {
+        get => Hub.Config.LowBatteryRumble;
+        set
+        {
+            if (Hub.Config.LowBatteryRumble == value) return;
+            Hub.Config.LowBatteryRumble = value;
+            Raise();
+            Hub.RequestSave();
+        }
+    }
+
+    public string LowBatteryText => $"When a Wiimote's battery drops to {AppConfig.LowBatteryPercent}% or below:";
 
     // ------------------------------------------------------------------ start with Windows
 

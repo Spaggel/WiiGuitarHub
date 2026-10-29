@@ -96,6 +96,15 @@ public sealed class AppConfig
 
     /// <summary>The window's close button hides it to the tray instead of exiting.</summary>
     public bool CloseToTray { get; set; }
+
+    /// <summary>Show a Windows notification when a Wiimote's battery runs low.</summary>
+    public bool LowBatteryNotify { get; set; } = true;
+
+    /// <summary>Rumble the Wiimote (three short pulses) when its battery runs low.</summary>
+    public bool LowBatteryRumble { get; set; } = true;
+
+    /// <summary>Battery percentage at or below which a Wiimote counts as low.</summary>
+    public const int LowBatteryPercent = 15;
 }
 
 public sealed class ConfigStore

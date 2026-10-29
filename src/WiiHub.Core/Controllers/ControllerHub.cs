@@ -53,6 +53,9 @@ public sealed class ControllerHub : IDisposable
     /// <summary>Raised from the calling thread.</summary>
     public event Action<ControllerSlot>? SlotRemoved;
 
+    /// <summary>A controller's battery ran low (raised once per drop, from a background thread).</summary>
+    public event Action<ControllerSlot, int>? LowBattery;
+
     public void Start()
     {
         _timer = new Timer(_ => Poll(), null, TimeSpan.Zero, PollInterval);
@@ -296,6 +299,13 @@ public sealed class ControllerHub : IDisposable
         }
     }
 
+    private void OnLowBattery(ControllerSlot slot, int percent)
+    {
+        Log.Warn($"{slot.Config.Name}: battery low ({percent}%).");
+        if (_config.LowBatteryRumble) _ = slot.LowBatteryRumbleAsync();
+        LowBattery?.Invoke(slot, percent);
+    }
+
     private static ulong? ParseAddress(string id)
     {
         string? mac = Bluetooth.BtAddress.Normalize(id);
@@ -323,6 +333,7 @@ public sealed class ControllerHub : IDisposable
     {
         var slot = new ControllerSlot(cfg, PadFactory);
         slot.Changed += _ => RequestSave();
+        slot.LowBattery += OnLowBattery;
         return slot;
     }
 

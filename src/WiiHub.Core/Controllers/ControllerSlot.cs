@@ -127,7 +127,50 @@ public sealed class ControllerSlot : IDisposable
         {
             _lastExtension = state.Extension;
             _lastBattery = state.BatteryPercent;
+            CheckBattery(state);
             Changed?.Invoke(this);
+        }
+    }
+
+    // ------------------------------------------------------------------ battery
+
+    private bool _lowBatteryWarned;
+
+    /// <summary>
+    /// Raised (from a background thread) once when the battery drops to
+    /// <see cref="AppConfig.LowBatteryPercent"/> or below. It is raised again only after the
+    /// battery went back up (new batteries), so a low Wiimote doesn't warn over and over.
+    /// </summary>
+    public event Action<ControllerSlot, int>? LowBattery;
+
+    private void CheckBattery(WiimoteState state)
+    {
+        int percent = state.BatteryPercent;
+        if (percent < 0) return; // not reported yet
+
+        bool low = percent <= AppConfig.LowBatteryPercent || state.BatteryLow;
+        if (low && !_lowBatteryWarned)
+        {
+            _lowBatteryWarned = true;
+            LowBattery?.Invoke(this, percent);
+        }
+        else if (!low && percent >= AppConfig.LowBatteryPercent + 10)
+        {
+            _lowBatteryWarned = false; // fresh batteries: warn again next time they run low
+        }
+    }
+
+    /// <summary>Three short pulses: "my batteries are running low".</summary>
+    public async Task LowBatteryRumbleAsync()
+    {
+        var dev = _device;
+        if (dev is null) return;
+        for (int i = 0; i < 3; i++)
+        {
+            dev.SetRumble(true);
+            await Task.Delay(120);
+            dev.SetRumble(false);
+            await Task.Delay(180);
         }
     }
 

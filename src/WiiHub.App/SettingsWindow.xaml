@@ -28,6 +28,18 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Low battery -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Low battery" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{Binding LowBatteryText}" Margin="0,0,0,6" />
+                        <CheckBox Content="Show a Windows notification" IsChecked="{Binding LowBatteryNotify}" Margin="0,0,0,6" />
+                        <CheckBox Content="Rumble the Wiimote (three short pulses)" IsChecked="{Binding LowBatteryRumble}" />
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Text="Each Wiimote warns once, and again only after new batteries ran low. While a fullscreen game runs, Windows' “Do not disturb” may hold notifications back until you leave the game; the rumble always comes through." />
+                    </StackPanel>
+                </Border>
+
                 <!-- Tray -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>

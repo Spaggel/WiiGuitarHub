@@ -58,6 +58,9 @@ public interface IUiServices
 
     void ShowError(string title, string message);
 
+    /// <summary>Windows notification (toast) via the tray icon.</summary>
+    void ShowNotification(string title, string message, bool warning);
+
     void ShowPairWindow(PairViewModel viewModel);
 
     void ShowSettingsWindow(MainViewModel viewModel);
