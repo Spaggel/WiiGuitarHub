@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Pair a Wiimote"
         Icon="Assets/wii-guitar-hub.ico"
-        Width="640" Height="680" MinWidth="520" MinHeight="560"
+        Width="640" Height="760" MinWidth="520" MinHeight="420"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Background="{StaticResource WindowBg}" Foreground="{StaticResource TextBrush}"
         FontFamily="Segoe UI" FontSize="13"
@@ -13,8 +13,14 @@
             <Button Content="Close" HorizontalAlignment="Right" Width="90" IsCancel="True" Click="Close_Click" />
         </Grid>
 
+        <!-- Everything above the Close button scrolls when the window is too small for it
+             (e.g. with several known Wiimotes, or on a small screen). -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      Padding="0,0,6,0" Focusable="False">
+        <StackPanel>
+
         <!-- Step 1: pair -->
-        <Border DockPanel.Dock="Top" Style="{StaticResource Card}">
+        <Border Style="{StaticResource Card}">
             <StackPanel>
                 <TextBlock Text="Pair a new Wiimote" Style="{StaticResource SectionTitle}" />
                 <TextBlock Text="{Binding BluetoothStatus}" Style="{StaticResource Caption}" Margin="0,0,0,10" TextWrapping="Wrap" />
@@ -35,7 +41,7 @@
                                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
 
-                <ListBox ItemsSource="{Binding Messages}" Height="150" Margin="0,12,0,0" BorderBrush="{StaticResource BorderBrush}"
+                <ListBox ItemsSource="{Binding Messages}" MinHeight="60" MaxHeight="150" Margin="0,12,0,0" BorderBrush="{StaticResource BorderBrush}"
                          FontFamily="Consolas" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -79,5 +85,7 @@
                 </ItemsControl>
             </DockPanel>
         </Border>
+        </StackPanel>
+        </ScrollViewer>
     </DockPanel>
 </Window>
