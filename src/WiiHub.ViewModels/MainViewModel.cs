@@ -71,6 +71,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _startWithWindows = autostart.Enabled;
         _startMinimized = !autostart.Enabled || autostart.Minimized; // default: minimized
 
+        CheckForUpdatesNowCommand = new RelayCommand(() => _ = CheckForUpdatesAsync(userAsked: true), () => !_checkingForUpdates);
+        if (Hub.Config.CheckForUpdates) _ = CheckForUpdatesAsync(userAsked: false);
+
         Task.Run(() =>
         {
             bool ok = WiimoteBluetooth.IsBluetoothAvailable(out string status);
@@ -173,6 +176,67 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             int total = Controllers.Count, connected = Controllers.Count(c => c.IsConnected);
             return total == 0 ? "No controllers paired" : $"{connected} of {total} connected";
         }
+    }
+
+    // ------------------------------------------------------------------ updates
+
+    private bool _checkingForUpdates;
+    private bool _updateAvailable;
+    private string _updateVersion = "";
+    private string _updateUrl = UpdateChecker.ReleasesPage;
+    private string _updateStatus = "";
+
+    public string VersionText => $"Version {UpdateChecker.CurrentVersionText}";
+
+    public bool CheckForUpdates
+    {
+        get => Hub.Config.CheckForUpdates;
+        set
+        {
+            if (Hub.Config.CheckForUpdates == value) return;
+            Hub.Config.CheckForUpdates = value;
+            Raise();
+            Hub.RequestSave();
+        }
+    }
+
+    public bool UpdateAvailable { get => _updateAvailable; private set => Set(ref _updateAvailable, value); }
+    public string UpdateVersion { get => _updateVersion; private set => Set(ref _updateVersion, value); }
+    public string UpdateUrl { get => _updateUrl; private set => Set(ref _updateUrl, value); }
+
+    /// <summary>Result of the last check, shown in Settings.</summary>
+    public string UpdateStatus { get => _updateStatus; private set => Set(ref _updateStatus, value); }
+
+    public RelayCommand CheckForUpdatesNowCommand { get; }
+
+    private async Task CheckForUpdatesAsync(bool userAsked)
+    {
+        Ui.Post(() =>
+        {
+            _checkingForUpdates = true;
+            UpdateStatus = "Checking…";
+            CheckForUpdatesNowCommand.RaiseCanExecuteChanged();
+        });
+
+        var result = await UpdateChecker.CheckAsync().ConfigureAwait(false);
+        if (result.Status == WiiHub.Core.Config.UpdateStatus.Failed) Log.Warn(result.Message);
+        else Log.Info(result.Message);
+
+        Ui.Post(() =>
+        {
+            _checkingForUpdates = false;
+            CheckForUpdatesNowCommand.RaiseCanExecuteChanged();
+            UpdateStatus = result.Message;
+            if (result.Update is { } update)
+            {
+                UpdateVersion = UpdateChecker.Format(update.Version);
+                UpdateUrl = update.Url;
+                UpdateAvailable = true;
+                if (!userAsked)
+                    Ui.ShowNotification("Wii Guitar Hub update available",
+                        $"Version {UpdateVersion} is available. Open Wii Guitar Hub to download it.", warning: false);
+            }
+        });
     }
 
     // ------------------------------------------------------------------ theme

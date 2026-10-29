@@ -75,6 +75,24 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Updates -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Updates" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{Binding VersionText}" Margin="0,0,0,8" />
+                        <CheckBox Content="Check for updates when Wii Guitar Hub starts" IsChecked="{Binding CheckForUpdates}" Margin="0,0,0,8" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Check now" Command="{Binding CheckForUpdatesNowCommand}" Margin="0,0,10,0" />
+                            <TextBlock Text="{Binding UpdateStatus}" Style="{StaticResource Caption}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="320" />
+                        </StackPanel>
+                        <TextBlock Margin="0,8,0,0" Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}">
+                            <Hyperlink NavigateUri="{Binding UpdateUrl}" RequestNavigate="Hyperlink_RequestNavigate">Download the new version from GitHub</Hyperlink>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Text="The check only asks GitHub which release is the newest; nothing about you or your controllers is sent." />
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

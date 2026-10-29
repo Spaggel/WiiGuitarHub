@@ -108,6 +108,9 @@ public sealed class AppConfig
 
     public AppTheme Theme { get; set; } = AppTheme.System;
 
+    /// <summary>Ask GitHub for a newer release when the app starts.</summary>
+    public bool CheckForUpdates { get; set; } = true;
+
     /// <summary>Show a Windows notification when a Wiimote's battery runs low.</summary>
     public bool LowBatteryNotify { get; set; } = true;
 

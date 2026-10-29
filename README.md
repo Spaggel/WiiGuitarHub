@@ -17,6 +17,9 @@ Wii Guitar Hub connects your Wiimotes to Windows and makes each one show up as a
 - **Button remapping** for every button, fret, whammy and stick.
 - **Name your controllers**, e.g. "Red guitar" or "Aerosmith".
 - **Turn Wiimotes off** from the PC, or let idle ones switch off automatically to save batteries.
+- **Low-battery warning**: a Windows notification and a short rumble on the guitar.
+- **Runs in the tray**, can **start with Windows**: ideal for a dedicated Clone Hero / YARG PC.
+- **Light and dark theme**, or follow Windows.
 
 ---
 
@@ -96,24 +99,57 @@ reconnect by itself. Fix it like this:
 | Name a Wiimote | Click **✎ Rename** in the header, press **F2**, or double-click it in the list. |
 | Change the player number | Use the **Player (LEDs)** dropdown. |
 | Turn one Wiimote off | Click **Turn off** in the header, or right-click it in the list → **Turn off**. |
-| Turn all Wiimotes off | Click **Turn off all** in the sidebar. |
-| Save batteries automatically | At the bottom of the sidebar, choose when idle Wiimotes switch off: never, or after 5, 10 (default), 15 or 30 minutes, or 1 hour. |
-| Start Wii Guitar Hub automatically | Tick **Start with Windows** at the bottom of the sidebar. Tick **Start minimized** to keep the window out of the way. |
+| Turn all Wiimotes off | Click **Turn off all** in the sidebar, or right-click the tray icon → **Turn off all Wiimotes**. |
+| Check the batteries | Each controller shows a battery icon and percentage in the list. |
+| Change settings | Click **Settings** at the bottom of the sidebar. |
 
 Turning a Wiimote off keeps it paired. Press any button to turn it on again.
+
+### Settings
+
+Click **Settings** at the bottom of the sidebar. Changes are saved immediately.
+
+| Setting | What it does |
+|---|---|
+| **Theme** | Light, Dark, or **Follow Windows** (default). |
+| **Turn off idle Wiimotes** | Switch off a Wiimote nobody touched for 5, 10 (default), 15 or 30 minutes or 1 hour, or never. |
+| **Low battery** | When a Wiimote drops to 15% or below: show a Windows notification and/or rumble the Wiimote (three short pulses). Both on by default, each can be turned off. A Wiimote warns once, and again only after new batteries ran low. |
+| **Minimize to the tray** | Minimizing hides the window to the notification area (tray). On by default. |
+| **Close button keeps it running in the tray** | The ✕ button hides the window instead of exiting. Off by default. |
+| **Start with Windows** / **Start minimized** | Start automatically when you log in, optionally hidden in the tray. |
+| **Check for updates** | Look for a newer release on GitHub at startup. You can also click **Check now**. |
+
+**Notifications during games:** low-battery and update notifications are normal Windows notifications.
+While a fullscreen game runs, Windows' *Do not disturb* usually holds them back until you leave the
+game (you find them in the notification centre). The rumble always comes through, so leave that on
+if you want to notice low batteries mid-song.
+
+### The tray icon
+
+While Wii Guitar Hub runs, its icon sits in the notification area next to the clock (it may be
+under the **^** arrow).
+
+- **Click** it to open the window.
+- **Right-click** it to see each controller's player number and battery, **Turn off all Wiimotes**,
+  or **Exit**.
+
+Your controllers keep working while the window is hidden.
 
 ### Dedicated Clone Hero / YARG PC
 
 For a PC that's only used for playing:
 
-1. Tick **Start with Windows** and **Start minimized**.
+1. In **Settings**, tick **Start with Windows** and **Start minimized**, and keep **Minimize to the tray**
+   on.
 2. Optionally, set **Turn off idle Wiimotes** so the guitars switch off when nobody plays.
 
-After logging in, Wii Guitar Hub starts by itself. Pick up a guitar, press a button, and it connects.
+After logging in, Wii Guitar Hub starts by itself, straight into the tray. Pick up a guitar, press a
+button, and it connects.
 Starting Wii Guitar Hub again while it's already running just brings the open window to the front.
 You can also switch the automatic start off in Task Manager → **Startup apps**.
 
-Wii Guitar Hub must be running for the controllers to work. Leave it open, or minimise it while you play.
+Wii Guitar Hub must be running for the controllers to work. Leave it open, or minimise it to the tray
+while you play.
 
 ---
 
@@ -242,25 +278,30 @@ keyboard), Z is the left trigger and C is LB.
 
 **The guitar isn't detected**
 - Unplug and replug the guitar cable from the Wiimote.
-- The status line in the header should say **Guitar**. If it says *Unknown extension*, check the
-  **Log** tab.
+- The status line in the header should say **Guitar**. If it says *Unknown extension*, click **Log**
+  at the bottom of the sidebar.
 
 **Tilt triggers all the time or never**
 - Calibrate tilt again (Rest / Tilted) and adjust the **Trigger at** slider.
+
+**I don't see low-battery notifications during a game**
+- Windows holds notifications back during fullscreen games (*Do not disturb*). They are in the
+  notification centre afterwards. The rumble warning still works in-game.
 
 **Xbox controller mode doesn't work**
 - Install ViGEmBus (see Installation) and restart your PC.
 
 **Something else**
-- The **Log** tab shows what Wii Guitar Hub is doing: pairing steps, connects, disconnects and errors.
-  Include it when you report a problem.
+- Click **Log** at the bottom of the sidebar to see what Wii Guitar Hub is doing: pairing steps,
+  connects, disconnects and errors. **Copy all** puts it on the clipboard; include it when you report
+  a problem.
 
 ---
 
 ## Where are my settings?
 
 Everything is saved automatically in `%AppData%\WiiHub\config.json`: names, player numbers, mappings,
-tilt calibration and the auto-off setting. To start fresh, close Wii Guitar Hub and delete that file.
+tilt calibration and all settings (except *Start with Windows*, which lives in Windows' own startup list). To start fresh, close Wii Guitar Hub and delete that file.
 
 To move Wii Guitar Hub to another folder, just move the folder. To uninstall, delete the folder and,
 optionally, the settings file above.

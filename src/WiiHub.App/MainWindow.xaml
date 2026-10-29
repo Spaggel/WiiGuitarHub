@@ -43,6 +43,19 @@
 
                 <!-- Status of the drivers at the bottom of the sidebar -->
                 <StackPanel DockPanel.Dock="Bottom" Margin="18,10,18,16">
+                    <!-- Update banner (only when a newer release exists) -->
+                    <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="10,8" Margin="0,0,0,12"
+                            Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}">
+                                <Run Text="Update available: " /><Run Text="{Binding UpdateVersion, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Margin="0,2,0,0">
+                                <Hyperlink NavigateUri="{Binding UpdateUrl}" RequestNavigate="Hyperlink_RequestNavigate">Download from GitHub</Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <Button Command="{Binding OpenSettingsCommand}" Margin="0,0,6,0" ToolTip="Auto-off, startup and other settings">
                             <StackPanel Orientation="Horizontal">
