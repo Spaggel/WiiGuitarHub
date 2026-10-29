@@ -2,7 +2,7 @@
 
   <!-- UI logic without any WPF dependency, so it can be unit-tested and kept separate from XAML. -->
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>WiiHub.ViewModels</RootNamespace>

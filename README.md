@@ -269,7 +269,7 @@ optionally, the settings file above.
 
 ## For developers
 
-Wii Guitar Hub is a C# / .NET 8 WPF app.
+Wii Guitar Hub is a C# / .NET 10 WPF app.
 
 ```
 src/WiiHub.Core         Bluetooth pairing, HID I/O, Wiimote protocol, mapping, keyboard output, settings
@@ -277,7 +277,7 @@ src/WiiHub.ViewModels   UI logic (MVVM), no WPF dependency
 src/WiiHub.App          WPF user interface and ViGEmBus (Xbox 360) output
 ```
 
-Build and run (Windows, .NET 8 SDK):
+Build and run (Windows, .NET 10 SDK):
 
 ```powershell
 dotnet run --project src/WiiHub.App
