@@ -8,6 +8,9 @@ public sealed class UiServices : IUiServices
 {
     public Window? Owner { get; set; }
 
+    /// <summary>The notification-area icon; used for Windows notifications.</summary>
+    public TrayIcon? Tray { get; set; }
+
     public void Post(Action action)
     {
         var dispatcher = Application.Current?.Dispatcher;

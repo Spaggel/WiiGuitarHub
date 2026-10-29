@@ -131,6 +131,42 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    // ------------------------------------------------------------------ tray
+
+    public bool MinimizeToTray
+    {
+        get => Hub.Config.MinimizeToTray;
+        set
+        {
+            if (Hub.Config.MinimizeToTray == value) return;
+            Hub.Config.MinimizeToTray = value;
+            Raise();
+            Hub.RequestSave();
+        }
+    }
+
+    public bool CloseToTray
+    {
+        get => Hub.Config.CloseToTray;
+        set
+        {
+            if (Hub.Config.CloseToTray == value) return;
+            Hub.Config.CloseToTray = value;
+            Raise();
+            Hub.RequestSave();
+        }
+    }
+
+    /// <summary>One-line summary for the tray tooltip, e.g. "2 of 3 controllers connected".</summary>
+    public string TraySummary
+    {
+        get
+        {
+            int total = Controllers.Count, connected = Controllers.Count(c => c.IsConnected);
+            return total == 0 ? "No controllers paired" : $"{connected} of {total} connected";
+        }
+    }
+
     // ------------------------------------------------------------------ start with Windows
 
     private bool _startWithWindows;

@@ -4,6 +4,8 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- Only for the notification-area (tray) icon. -->
+    <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>WiiHub.App</RootNamespace>
@@ -17,6 +19,13 @@
   <ItemGroup>
     <Resource Include="Assets\wii-guitar-hub.ico" />
     <Resource Include="Assets\wii-guitar-hub.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Keep WinForms/Drawing out of the global usings: their Application, MessageBox, Color, … would
+         clash with the WPF types of the same name. Files that need them import them explicitly. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>

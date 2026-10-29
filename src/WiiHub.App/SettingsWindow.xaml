@@ -28,6 +28,17 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Tray -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Notification area (tray)" Style="{StaticResource SectionTitle}" />
+                        <CheckBox Content="Minimize to the tray" IsChecked="{Binding MinimizeToTray}" Margin="0,0,0,6" />
+                        <CheckBox Content="Close button keeps it running in the tray" IsChecked="{Binding CloseToTray}" />
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Text="Your controllers keep working while the window is hidden. Click the tray icon to open the window; right-click it to see your controllers, turn them all off, or exit." />
+                    </StackPanel>
+                </Border>
+
                 <!-- Startup -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
@@ -36,7 +47,7 @@
                         <CheckBox Content="Start minimized" IsChecked="{Binding StartMinimized}" Margin="22,0,0,0"
                                   IsEnabled="{Binding StartWithWindows}" />
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,8,0,0"
-                                   Text="Handy for a dedicated Clone Hero / YARG PC: Wii Guitar Hub starts when you log in, and your guitars connect as soon as you press a button." />
+                                   Text="Handy for a dedicated Clone Hero / YARG PC: Wii Guitar Hub starts when you log in, and your guitars connect as soon as you press a button. With “Minimize to the tray” on, a minimized start goes straight to the tray." />
                     </StackPanel>
                 </Border>
 

@@ -14,6 +14,10 @@ public partial class App : Application
     private ViGEmPadFactory? _padFactory;
     private MainViewModel? _viewModel;
     private DispatcherTimer? _uiTimer;
+    private DispatcherTimer? _trayTimer;
+    private TrayIcon? _tray;
+    private bool _exiting;
+    private bool _toldAboutCloseToTray;
 
     // Only one copy may run: two copies would fight over the same Wiimotes.
     private const string InstanceMutexName = @"Local\WiiGuitarHub.Instance";
@@ -50,8 +54,26 @@ public partial class App : Application
         var window = new MainWindow { DataContext = _viewModel };
         ui.Owner = window;
         MainWindow = window;
-        if (startMinimized) window.WindowState = WindowState.Minimized;
-        window.Show();
+        window.StateChanged += MainWindow_StateChanged;
+        window.Closing += MainWindow_Closing;
+        SessionEnding += (_, _) => _exiting = true; // never block Windows from logging off
+
+        _tray = new TrayIcon(_viewModel, ShowMainWindow, ExitApp);
+        ui.Tray = _tray;
+        _trayTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _trayTimer.Tick += (_, _) => _tray.Refresh();
+        _trayTimer.Start();
+
+        if (startMinimized && config.MinimizeToTray)
+        {
+            // Started with Windows: stay in the notification area until the user opens the window.
+            Log.Info("Started in the notification area (tray).");
+        }
+        else
+        {
+            if (startMinimized) window.WindowState = WindowState.Minimized;
+            window.Show();
+        }
 
         _hub.Start();
 
@@ -68,6 +90,8 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _uiTimer?.Stop();
+        _trayTimer?.Stop();
+        _tray?.Dispose();
         _viewModel?.Dispose();
         _hub?.Dispose();
         _padFactory?.Dispose();
@@ -114,11 +138,41 @@ public partial class App : Application
         return true;
     }
 
+    // ------------------------------------------------------------------ tray
+
+    private void MainWindow_StateChanged(object? sender, EventArgs e)
+    {
+        if (sender is Window { WindowState: WindowState.Minimized } window && _viewModel is { MinimizeToTray: true })
+            window.Hide();
+    }
+
+    private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (_exiting || _viewModel is not { CloseToTray: true } || sender is not Window window) return;
+
+        e.Cancel = true;
+        window.Hide();
+        if (!_toldAboutCloseToTray)
+        {
+            _toldAboutCloseToTray = true;
+            _tray?.ShowNotification("Wii Guitar Hub is still running",
+                "Your controllers keep working. Use the tray icon to open the window or exit.");
+        }
+    }
+
+    private void ShowMainWindow() => BringToFront();
+
+    private void ExitApp()
+    {
+        _exiting = true;
+        Shutdown();
+    }
+
     private void BringToFront()
     {
         if (MainWindow is not { } window) return;
-        if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
         window.Show();
+        if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
         window.Activate();
         // Windows only lets a background app steal focus briefly; topmost toggling makes it visible.
         window.Topmost = true;

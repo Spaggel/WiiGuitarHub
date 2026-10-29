@@ -90,6 +90,12 @@ public sealed class AppConfig
 
     /// <summary>Turn off Wiimotes nobody has touched for this many minutes. 0 = never.</summary>
     public int AutoOffMinutes { get; set; } = 10;
+
+    /// <summary>Minimising the window hides it to the notification area (tray).</summary>
+    public bool MinimizeToTray { get; set; } = true;
+
+    /// <summary>The window's close button hides it to the tray instead of exiting.</summary>
+    public bool CloseToTray { get; set; }
 }
 
 public sealed class ConfigStore
