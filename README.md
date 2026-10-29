@@ -4,6 +4,8 @@
 
 Play PC games with your **Wii Remotes** and **Wii Guitar Hero guitars**, wirelessly over Bluetooth.
 
+![Wii Guitar Hub with two connected guitars, showing the live input check](images/app.png)
+
 Wii Guitar Hub connects your Wiimotes to Windows and makes each one show up as an **Xbox 360 controller** or as
 **keyboard keys**. Plug a Guitar Hero guitar into the Wiimote and it works in games such as
 **Clone Hero** and **YARG**. That covers frets, strumming, whammy and Star Power tilt.
@@ -172,6 +174,8 @@ Wiimote is briefly gone, so the game doesn't drop you from your player slot.
 ## Changing buttons (mapping)
 
 Open the **Button mapping** tab.
+
+![The Button mapping tab: each fret row has its own colour, and rows light up while pressed](images/mapping.png)
 
 1. With **When this is plugged in**, choose what you want to change: **Guitar**, **Wiimote only** or
    **Wiimote + Nunchuk**. Wii Guitar Hub uses the right one automatically when you plug something in.
