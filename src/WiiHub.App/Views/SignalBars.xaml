@@ -1,0 +1,20 @@
+<!-- Four signal bars, like a phone's. Bars = 0..4 lit, Color = "#RRGGBB" of the lit bars. -->
+<UserControl x:Class="WiiHub.App.Views.SignalBars"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <Border Width="3" Height="4" Margin="0,0,1.5,0" CornerRadius="1" VerticalAlignment="Bottom"
+                Background="{Binding Color, ElementName=Root, Converter={StaticResource HexBrush}}"
+                Opacity="{Binding Bars, ElementName=Root, Converter={StaticResource IndexOpacity}, ConverterParameter=1}" />
+        <Border Width="3" Height="6.5" Margin="0,0,1.5,0" CornerRadius="1" VerticalAlignment="Bottom"
+                Background="{Binding Color, ElementName=Root, Converter={StaticResource HexBrush}}"
+                Opacity="{Binding Bars, ElementName=Root, Converter={StaticResource IndexOpacity}, ConverterParameter=2}" />
+        <Border Width="3" Height="9" Margin="0,0,1.5,0" CornerRadius="1" VerticalAlignment="Bottom"
+                Background="{Binding Color, ElementName=Root, Converter={StaticResource HexBrush}}"
+                Opacity="{Binding Bars, ElementName=Root, Converter={StaticResource IndexOpacity}, ConverterParameter=3}" />
+        <Border Width="3" Height="11.5" CornerRadius="1" VerticalAlignment="Bottom"
+                Background="{Binding Color, ElementName=Root, Converter={StaticResource HexBrush}}"
+                Opacity="{Binding Bars, ElementName=Root, Converter={StaticResource IndexOpacity}, ConverterParameter=4}" />
+    </StackPanel>
+</UserControl>

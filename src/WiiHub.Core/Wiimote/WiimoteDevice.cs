@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading.Channels;
 using WiiHub.Core.Bluetooth;
 using WiiHub.Core.Hid;
@@ -56,6 +57,15 @@ public sealed class WiimoteDevice : IDisposable
     /// <summary>Raised once, from a background thread, when the link is lost.</summary>
     public event Action<WiimoteDevice>? Disconnected;
 
+    /// <summary>Connection quality measurements (report rate, dropouts, response time).</summary>
+    public LinkStats Link { get; } = new();
+
+    /// <summary>How often a small memory read measures the response time.</summary>
+    public static readonly TimeSpan DefaultPingInterval = TimeSpan.FromSeconds(5);
+
+    private Timer? _pingTimer;
+    private int _pingPending;
+
     /// <summary>Raised when an extension (guitar, nunchuk...) is plugged/unplugged and identified.</summary>
     public event Action<WiimoteDevice, ExtensionType>? ExtensionChanged;
 
@@ -91,12 +101,15 @@ public sealed class WiimoteDevice : IDisposable
 
         dev._online = true;
         dev._worker = Task.Run(dev.CommandLoopAsync);
+        dev._pingTimer = new Timer(_ => dev.QueuePing(), null, DefaultPingInterval, DefaultPingInterval);
         dev.Enqueue(dev.InitializeAsync);
         return dev;
     }
 
     private async Task InitializeAsync()
     {
+        // Reporting pauses on purpose while we set up; don't count that as dropouts.
+        Link.SuppressDropouts(TimeSpan.FromSeconds(2));
         Send(BuildLeds(_ledMask, rumble: false));
 
         var calData = await ReadMemoryAsync(EepromAccelCalibration, 10, registers: false).ConfigureAwait(false);
@@ -158,6 +171,7 @@ public sealed class WiimoteDevice : IDisposable
 
             if (r == HidIoResult.Ok && n > 0)
             {
+                Link.OnReport();
                 lastReport = now;
                 probeSent = false;
                 try { HandleReport(buffer.AsSpan(0, n)); }
@@ -313,6 +327,7 @@ public sealed class WiimoteDevice : IDisposable
 
     private async Task HandleExtensionChangeAsync(bool plugged)
     {
+        Link.SuppressDropouts(TimeSpan.FromSeconds(2));
         if (!plugged)
         {
             UpdateState(s => s with { Extension = ExtensionType.None, Guitar = null, Nunchuk = null });
@@ -449,6 +464,38 @@ public sealed class WiimoteDevice : IDisposable
         ThreadPool.QueueUserWorkItem(_ => Disconnected?.Invoke(this));
     }
 
+    // ------------------------------------------------------------------ ping
+
+    /// <summary>Ping more often (e.g. during a range test) or back to the default.</summary>
+    public void SetPingInterval(TimeSpan interval)
+    {
+        try { _pingTimer?.Change(interval, interval); }
+        catch (ObjectDisposedException) { /* disconnected */ }
+    }
+
+    private void QueuePing()
+    {
+        if (!IsConnected || Interlocked.Exchange(ref _pingPending, 1) == 1) return;
+        Enqueue(PingAsync);
+    }
+
+    /// <summary>Reads one byte of the Wiimote's memory and records how long the answer took.</summary>
+    private async Task PingAsync()
+    {
+        try
+        {
+            long start = Stopwatch.GetTimestamp();
+            var data = await ReadMemoryAsync(EepromAccelCalibration, 1, registers: false).ConfigureAwait(false);
+            if (!IsConnected) return;
+            if (data is null) Link.OnPingLost();
+            else Link.OnPing(Stopwatch.GetElapsedTime(start).TotalMilliseconds);
+        }
+        finally
+        {
+            Volatile.Write(ref _pingPending, 0);
+        }
+    }
+
     public void Dispose()
     {
         if (IsConnected && _rumble)
@@ -457,6 +504,7 @@ public sealed class WiimoteDevice : IDisposable
         }
         Interlocked.Exchange(ref _disconnected, 1);
         if (_cts.IsCancellationRequested) return;
+        _pingTimer?.Dispose();
         _cts.Cancel();
         _commands.Writer.TryComplete();
         _hid.CancelPendingIo();

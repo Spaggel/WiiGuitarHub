@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using WiiHub.Core;
 using WiiHub.Core.Bluetooth;
 using WiiHub.Core.Config;
@@ -38,6 +39,8 @@ public sealed class ControllerViewModel : ObservableObject
         CalibrateTiltedCommand = new RelayCommand(CalibrateTilted, () => IsConnected && _tiltRest is not null);
         ResetTiltCommand = new RelayCommand(ResetTilt);
         TurnOffCommand = new RelayCommand(TurnOff, () => IsConnected && !_turningOff);
+        RangeTestCommand = new RelayCommand(() => _ = RunRangeTestAsync(), () => IsConnected && !IsTesting);
+        CancelRangeTestCommand = new RelayCommand(() => _testCts?.Cancel(), () => IsTesting);
         StartRenameCommand = new RelayCommand(StartRename);
         CommitRenameCommand = new RelayCommand(CommitRename);
         CancelRenameCommand = new RelayCommand(CancelRename);
@@ -323,12 +326,191 @@ public sealed class ControllerViewModel : ObservableObject
             _commandsConnectedState = connected;
             IdentifyCommand.RaiseCanExecuteChanged();
             TurnOffCommand.RaiseCanExecuteChanged();
+            RangeTestCommand.RaiseCanExecuteChanged();
             CalibrateRestCommand.RaiseCanExecuteChanged();
             CalibrateTiltedCommand.RaiseCanExecuteChanged();
+        }
+
+        // Connection quality changes slowly; twice a second is plenty.
+        long now = Environment.TickCount64;
+        if (now - _lastLinkUpdate >= 500 || connected != _linkWasConnected)
+        {
+            _lastLinkUpdate = now;
+            _linkWasConnected = connected;
+            UpdateLink(dev, connected);
         }
     }
 
     private bool? _commandsConnectedState;
+
+    // ================================================================== connection quality
+
+    private const string GoodColor = "#2EB872", FairColor = "#F2A53A", PoorColor = "#E5484D", UnknownColor = "#8A94A6";
+
+    private long _lastLinkUpdate;
+    private bool _linkWasConnected;
+
+    private int _signalBars;
+    /// <summary>0–4 bars (0 = not connected or still measuring).</summary>
+    public int SignalBars { get => _signalBars; private set => Set(ref _signalBars, value); }
+
+    private string _signalColor = UnknownColor;
+    public string SignalColor { get => _signalColor; private set => Set(ref _signalColor, value); }
+
+    private string _signalText = "—";
+    /// <summary>"Good", "Fair", "Poor", "Measuring…".</summary>
+    public string SignalText { get => _signalText; private set => Set(ref _signalText, value); }
+
+    private string _signalDetails = "Not connected";
+    /// <summary>Tooltip with the numbers behind the rating.</summary>
+    public string SignalDetails { get => _signalDetails; private set => Set(ref _signalDetails, value); }
+
+    private string _linkRateText = "—", _linkDropoutsText = "—", _linkResponseText = "—";
+    public string LinkRateText { get => _linkRateText; private set => Set(ref _linkRateText, value); }
+    public string LinkDropoutsText { get => _linkDropoutsText; private set => Set(ref _linkDropoutsText, value); }
+    public string LinkResponseText { get => _linkResponseText; private set => Set(ref _linkResponseText, value); }
+
+    private void UpdateLink(WiimoteDevice? dev, bool connected)
+    {
+        if (!connected || dev is null)
+        {
+            SignalBars = 0;
+            SignalColor = UnknownColor;
+            SignalText = "—";
+            SignalDetails = "Not connected";
+            LinkRateText = LinkDropoutsText = LinkResponseText = "—";
+            return;
+        }
+
+        var s = dev.Link.Snapshot(TimeSpan.FromMinutes(1));
+        var (level, bars) = LinkQuality.Evaluate(s);
+        SignalBars = bars;
+        (SignalText, SignalColor) = level switch
+        {
+            LinkLevel.Good => ("Good", GoodColor),
+            LinkLevel.Fair => ("Fair", FairColor),
+            LinkLevel.Poor => ("Poor", PoorColor),
+            _ => ("Measuring…", UnknownColor),
+        };
+
+        LinkRateText = $"{s.ReportsPerSecond:0} updates/s";
+        LinkDropoutsText = s.Dropouts switch
+        {
+            0 => "No dropouts in the last minute",
+            1 => $"1 dropout in the last minute ({s.LongestGapMs:0} ms)",
+            _ => $"{s.Dropouts} dropouts in the last minute (longest {s.LongestGapMs:0} ms)",
+        };
+        LinkResponseText = s.AveragePingMs is { } ping ? $"{ping:0} ms response time" : "Response time: measuring…";
+        SignalDetails = $"Connection: {SignalText}\n{LinkRateText}\n{LinkDropoutsText}\n{LinkResponseText}";
+    }
+
+    // ---------------- range test
+
+    private CancellationTokenSource? _testCts;
+
+    public RelayCommand RangeTestCommand { get; }
+    public RelayCommand CancelRangeTestCommand { get; }
+
+    private bool _isTesting;
+    public bool IsTesting
+    {
+        get => _isTesting;
+        private set
+        {
+            if (!Set(ref _isTesting, value)) return;
+            RangeTestCommand.RaiseCanExecuteChanged();
+            CancelRangeTestCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    private double _testProgress;
+    /// <summary>0–100 while the range test runs.</summary>
+    public double TestProgress { get => _testProgress; private set => Set(ref _testProgress, value); }
+
+    private string _testStatus = "";
+    public string TestStatus { get => _testStatus; private set => Set(ref _testStatus, value); }
+
+    private bool _hasTestResult;
+    public bool HasTestResult { get => _hasTestResult; private set => Set(ref _hasTestResult, value); }
+
+    private string _testResultTitle = "", _testResultDetails = "", _testResultAdvice = "", _testResultColor = UnknownColor;
+    public string TestResultTitle { get => _testResultTitle; private set => Set(ref _testResultTitle, value); }
+    public string TestResultDetails { get => _testResultDetails; private set => Set(ref _testResultDetails, value); }
+    public string TestResultAdvice
+    {
+        get => _testResultAdvice;
+        private set
+        {
+            if (Set(ref _testResultAdvice, value)) Raise(nameof(HasTestAdvice));
+        }
+    }
+    public bool HasTestAdvice => !string.IsNullOrEmpty(_testResultAdvice);
+    public string TestResultColor { get => _testResultColor; private set => Set(ref _testResultColor, value); }
+
+    /// <summary>
+    /// Measures the connection for ~20 seconds while the player holds the controller where they play.
+    /// Runs on the UI thread (awaits resume there).
+    /// </summary>
+    private async Task RunRangeTestAsync()
+    {
+        var dev = Slot.Device;
+        if (dev is null || !Slot.IsConnected || IsTesting) return;
+
+        using var cts = new CancellationTokenSource();
+        _testCts = cts;
+        IsTesting = true;
+        HasTestResult = false;
+        TestProgress = 0;
+
+        dev.SetPingInterval(RangeTest.PingInterval);
+        var mark = dev.Link.Mark();
+        long start = Stopwatch.GetTimestamp();
+        bool lost = false, cancelled = false;
+        try
+        {
+            while (true)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+                if (elapsed >= RangeTest.Duration) break;
+                if (!dev.IsConnected)
+                {
+                    lost = true;
+                    break;
+                }
+                TestProgress = elapsed / RangeTest.Duration * 100;
+                int left = (int)Math.Ceiling((RangeTest.Duration - elapsed).TotalSeconds);
+                TestStatus = $"Testing… {left} s left. Hold the controller where you normally play.";
+                await Task.Delay(200, cts.Token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            cancelled = true;
+        }
+        finally
+        {
+            dev.SetPingInterval(WiimoteDevice.DefaultPingInterval);
+            IsTesting = false;
+            _testCts = null;
+            TestProgress = 0;
+            TestStatus = "";
+        }
+
+        if (cancelled) return;
+
+        var result = RangeTest.Evaluate(dev.Link.Measure(mark), lost);
+        TestResultTitle = result.Title;
+        TestResultDetails = result.Details;
+        TestResultAdvice = result.Advice;
+        TestResultColor = result.Level switch
+        {
+            LinkLevel.Good => GoodColor,
+            LinkLevel.Fair => FairColor,
+            _ => PoorColor,
+        };
+        HasTestResult = true;
+        Log.Info($"{Name}: range test: {result.Title} ({result.Details}).");
+    }
 
     // ================================================================== live input
 

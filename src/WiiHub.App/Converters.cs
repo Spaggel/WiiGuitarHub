@@ -116,6 +116,23 @@ public sealed class BatteryToGlyphConverter : IValueConverter
         throw new NotSupportedException();
 }
 
+/// <summary>
+/// Signal bars: value = number of lit bars, ConverterParameter = this bar's number (1-based).
+/// Returns full opacity for lit bars and a faint one for the others.
+/// </summary>
+public sealed class IndexOpacityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        int lit = value is int v ? v : 0;
+        int index = parameter is string p && int.TryParse(p, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : 1;
+        return lit >= index ? 1.0 : 0.25;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
 /// <summary>Battery percentage (or -1 when unknown) to a colour.</summary>
 public sealed class BatteryToBrushConverter : IValueConverter
 {
