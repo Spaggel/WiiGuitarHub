@@ -63,17 +63,19 @@ You don't need to install anything else; .NET is included.
 
 You only have to do this **once per Wiimote**.
 
-1. In Wii Guitar Hub, click **+ Pair a Wiimote**.
+1. In Wii Guitar Hub, click **+ Pair a Wiimote**. It starts searching right away.
 2. Keep **Permanent — red SYNC button** selected.
 3. Open the battery cover of the Wiimote and press the small **red SYNC button**. The blue LEDs
    start blinking.
-4. Click **Search & pair** within about 20 seconds.
-5. When it says *paired*, close the window. After a few seconds the Wiimote:
+4. Within a few seconds the window says *paired*. After a few more seconds the Wiimote:
    - appears in the list on the left,
    - rumbles once,
    - lights up its player LED.
+5. Press SYNC on the next Wiimote, or close the window when you're done.
 
-You can pair several Wiimotes one after another, or press SYNC on more than one at the same time.
+The window only pairs **new** Wiimotes; ones Windows already knows are left alone. While it's open,
+Bluetooth is busy searching, so close it before you play. It also stops by itself after 3 minutes
+without finding a new Wiimote (click **Search again** to continue).
 
 **Why the SYNC button?** When paired with SYNC, the Wiimote remembers your PC. Pairing with the
 1 + 2 buttons also works, but then you have to pair again every time the Wiimote turns off.
@@ -280,9 +282,12 @@ keyboard), Z is the left trigger and C is LB.
 
 ## Troubleshooting
 
-**"Search & pair" finds nothing**
-- Press the red SYNC button again **right before** clicking *Search & pair*. The Wiimote is only
-  findable for about 20 seconds.
+**The pairing window doesn't find my Wiimote**
+- Press the red SYNC button again while the window is open. The Wiimote is only findable for about
+  20 seconds after pressing SYNC.
+- If the window says it stopped searching, click **Search again**.
+- Was it paired with this PC before? Then it isn't new: it reconnects by pressing any button. If it
+  doesn't, remove it under *Wiimotes Windows already knows* and press SYNC again.
 - Make sure Bluetooth is turned on in Windows. Wii Guitar Hub shows your adapter at the bottom of the sidebar.
 - Third-party Wiimotes usually don't work on a PC.
 

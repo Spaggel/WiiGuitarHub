@@ -26,8 +26,9 @@ public sealed class PairViewModel : ObservableObject
         _ui = ui;
         StartCommand = new RelayCommand(Start, () => !IsBusy);
         CancelCommand = new RelayCommand(Cancel, () => IsBusy);
-        RefreshCommand = new RelayCommand(RefreshKnown, () => !IsBusy);
-        RemoveCommand = new RelayCommand(p => { if (p is KnownWiimoteViewModel k) RemoveKnown(k); }, _ => !IsBusy);
+        // Both work while searching: removing an old pairing is often exactly what lets a SYNC'd Wiimote pair.
+        RefreshCommand = new RelayCommand(RefreshKnown);
+        RemoveCommand = new RelayCommand(p => { if (p is KnownWiimoteViewModel k) RemoveKnown(k); });
         RefreshKnown();
     }
 
@@ -47,9 +48,29 @@ public sealed class PairViewModel : ObservableObject
             if (!Set(ref _isBusy, value)) return;
             StartCommand.RaiseCanExecuteChanged();
             CancelCommand.RaiseCanExecuteChanged();
-            RefreshCommand.RaiseCanExecuteChanged();
-            RemoveCommand.RaiseCanExecuteChanged();
         }
+    }
+
+    /// <summary>Stop searching when nothing new was paired for this long (inquiries keep the radio busy).</summary>
+    public static readonly TimeSpan StopWhenIdleFor = TimeSpan.FromMinutes(3);
+
+    private string _scanStatus = "";
+    /// <summary>One live line about the search (not added to the message list).</summary>
+    public string ScanStatus { get => _scanStatus; private set => Set(ref _scanStatus, value); }
+
+    private bool _restartAfterStop;
+
+    /// <summary>Called when the window opens: start searching right away.</summary>
+    public void StartAutoScan()
+    {
+        if (!IsBusy) Start();
+    }
+
+    /// <summary>Called when the window closes.</summary>
+    public void Stop()
+    {
+        _restartAfterStop = false;
+        _cts?.Cancel();
     }
 
     public bool PermanentMode
@@ -79,15 +100,24 @@ public sealed class PairViewModel : ObservableObject
             Raise(nameof(PermanentMode));
             Raise(nameof(TemporaryMode));
             Raise(nameof(Instructions));
+
+            // The PIN depends on the method, so restart the search with the new one.
+            if (IsBusy)
+            {
+                _restartAfterStop = true;
+                _cts?.Cancel();
+                ScanStatus = "Switching pairing method…";
+            }
         }
     }
 
     public string Instructions => _mode == PairMode.Permanent
-        ? "Open the battery cover and press the small red SYNC button. The LEDs start blinking. " +
-          "Then click “Search & pair”. Paired this way, the Wiimote reconnects by itself whenever " +
-          "you press a button — also after swapping batteries."
-        : "Hold 1 and 2 until the LEDs blink, then click “Search & pair”. The Wiimote forgets " +
-          "the PC when it turns off, so you will need to pair again next time.";
+        ? "Open the battery cover and press the small red SYNC button. The LEDs start blinking and the " +
+          "Wiimote is paired automatically within a few seconds. Paired this way, it reconnects by itself " +
+          "whenever you press a button — also after swapping batteries. You can pair several Wiimotes one " +
+          "after another."
+        : "Hold 1 and 2 until the LEDs blink; the Wiimote is paired automatically within a few seconds. " +
+          "It forgets the PC when it turns off, so you will need to pair again next time.";
 
     public string BluetoothStatus
     {
@@ -98,40 +128,65 @@ public sealed class PairViewModel : ObservableObject
     private void Start()
     {
         IsBusy = true;
-        Messages.Clear();
-        _cts = new CancellationTokenSource();
-        var ct = _cts.Token;
+        _restartAfterStop = false;
+        var cts = new CancellationTokenSource();
+        _cts = cts;
         var mode = _mode;
+        ScanStatus = mode == PairMode.Permanent
+            ? "Searching… press the red SYNC button on the Wiimote."
+            : "Searching… hold 1 + 2 on the Wiimote.";
 
         Task.Run(() =>
         {
+            var end = WiimoteBluetooth.ScanEnd.Cancelled;
             try
             {
-                var results = WiimoteBluetooth.PairDiscoverable(mode, Report, ct);
-                int ok = results.Count(r => r.Success);
-                if (ok > 0)
-                    Report($"Done: {ok} Wiimote(s) paired. They show up in the main window within a few seconds.");
+                end = WiimoteBluetooth.ScanAndPair(mode, Report, OnPaired, StopWhenIdleFor, cts.Token);
             }
             catch (Exception ex)
             {
-                Report($"Pairing failed: {ex.Message}");
-                Log.Error($"Pairing failed: {ex}");
+                Report($"Searching failed: {ex.Message}");
+                Log.Error($"Searching for Wiimotes failed: {ex}");
             }
             finally
             {
                 _ui.Post(() =>
                 {
+                    cts.Dispose();
+                    if (ReferenceEquals(_cts, cts)) _cts = null;
                     IsBusy = false;
+                    if (_restartAfterStop)
+                    {
+                        Start();
+                        return;
+                    }
+                    ScanStatus = end switch
+                    {
+                        WiimoteBluetooth.ScanEnd.Idle =>
+                            $"Stopped searching after {StopWhenIdleFor.TotalMinutes:0} minutes without a new Wiimote. Click “Search again” to continue.",
+                        WiimoteBluetooth.ScanEnd.NoAdapter => "No Bluetooth adapter found.",
+                        _ => "Search stopped.",
+                    };
                     RefreshKnown();
                 });
             }
         });
     }
 
+    private void OnPaired(PairResult result)
+    {
+        _ui.Post(() =>
+        {
+            Messages.Add($"✔ {result.Name} ({BtAddress.Format(result.Address)}) paired. It shows up in the main window within a few seconds.");
+            RefreshKnown();
+        });
+    }
+
     private void Cancel()
     {
+        _restartAfterStop = false;
         _cts?.Cancel();
-        Report("Cancelling after the current search round…");
+        ScanStatus = "Stopping after the current search round…";
     }
 
     private void Report(string message)

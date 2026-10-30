@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Background="{DynamicResource WindowBg}" Foreground="{DynamicResource TextBrush}"
         FontFamily="Segoe UI" FontSize="13"
-        Closing="Window_Closing">
+        Loaded="Window_Loaded" Closing="Window_Closing">
     <DockPanel Margin="18">
         <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
             <Button Content="Close" HorizontalAlignment="Right" Width="90" IsCancel="True" Click="Close_Click" />
@@ -34,12 +34,18 @@
                     <TextBlock Text="{Binding Instructions}" TextWrapping="Wrap" />
                 </Border>
 
+                <!-- Searching starts by itself when this window opens -->
                 <StackPanel Orientation="Horizontal">
-                    <Button Content="Search &amp; pair" Command="{Binding StartCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" />
-                    <Button Content="Stop" Command="{Binding CancelCommand}" />
-                    <ProgressBar Width="140" Height="6" Margin="14,0,0,0" IsIndeterminate="True" VerticalAlignment="Center"
+                    <ProgressBar Width="120" Height="6" Margin="0,0,12,0" IsIndeterminate="True" VerticalAlignment="Center"
                                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="Search again" Command="{Binding StartCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"
+                            Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolToVis}}" />
+                    <Button Content="Stop searching" Command="{Binding CancelCommand}"
+                            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
+                <TextBlock Text="{Binding ScanStatus}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{DynamicResource TextBrush}" />
+                <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                           Text="Only new Wiimotes are paired; ones Windows already knows are left alone. Searching keeps Bluetooth busy, so connected controllers may respond a little slower until you close this window. It stops by itself after 3 minutes without a new Wiimote." />
 
                 <ListBox ItemsSource="{Binding Messages}" MinHeight="60" MaxHeight="150" Margin="0,12,0,0" BorderBrush="{DynamicResource BorderBrush}"
                          FontFamily="Consolas" FontSize="12" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
