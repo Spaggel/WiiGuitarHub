@@ -111,6 +111,9 @@ public sealed class AppConfig
     /// <summary>Ask GitHub for a newer release when the app starts.</summary>
     public bool CheckForUpdates { get; set; } = true;
 
+    /// <summary>Notify when a Wiimote connects, disconnects or is turned off because it was idle.</summary>
+    public bool ConnectionNotifications { get; set; } = true;
+
     /// <summary>Show a Windows notification when a Wiimote's battery runs low.</summary>
     public bool LowBatteryNotify { get; set; } = true;
 

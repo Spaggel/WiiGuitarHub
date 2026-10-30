@@ -30,6 +30,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             var vm = AddSlot(slot);
             Selected ??= vm;
         });
+        hub.ControllerConnected += slot => ui.Post(() => NotifyConnection(slot, connected: true, TurnOffReason.None));
+        hub.ControllerDisconnected += (slot, why) => ui.Post(() => NotifyConnection(slot, connected: false, why));
         hub.LowBattery += (slot, percent) =>
         {
             if (!Hub.Config.LowBatteryNotify) return;
@@ -261,6 +263,49 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             Hub.RequestSave();
             Ui.ApplyTheme(value);
         }
+    }
+
+    // ------------------------------------------------------------------ connection notifications
+
+    /// <summary>Per controller: when its last connect/disconnect notification was shown.</summary>
+    private readonly Dictionary<string, long> _lastConnectionToast = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>A flaky connection can drop and come back quickly; show at most one toast per controller in this time.</summary>
+    private const long ConnectionToastCooldownMs = 10_000;
+
+    public bool ConnectionNotifications
+    {
+        get => Hub.Config.ConnectionNotifications;
+        set
+        {
+            if (Hub.Config.ConnectionNotifications == value) return;
+            Hub.Config.ConnectionNotifications = value;
+            Raise();
+            Hub.RequestSave();
+        }
+    }
+
+    private void NotifyConnection(ControllerSlot slot, bool connected, TurnOffReason why)
+    {
+        if (!Hub.Config.ConnectionNotifications) return;
+        // The user turned it off themselves (Turn off / Turn off all): no need to tell them.
+        if (!connected && why == TurnOffReason.Manual) return;
+
+        long now = Environment.TickCount64;
+        bool important = !connected && why == TurnOffReason.None; // lost mid-game: always worth showing
+        if (!important && _lastConnectionToast.TryGetValue(slot.Id, out long last) && now - last < ConnectionToastCooldownMs)
+            return;
+        _lastConnectionToast[slot.Id] = now;
+
+        string name = Controllers.FirstOrDefault(c => c.Slot == slot)?.Name ?? slot.Config.Name;
+        var (title, message) = (connected, why) switch
+        {
+            (true, _) => ($"{name} connected", $"Connected as Player {slot.Config.PlayerIndex}."),
+            (false, TurnOffReason.Idle) => ($"{name} turned off",
+                $"Not used for {Hub.Config.AutoOffMinutes} minutes. Press any button on the Wiimote to turn it on again."),
+            _ => ($"{name} disconnected", "Press any button on the Wiimote to reconnect."),
+        };
+        Ui.ShowNotification(title, message, warning: !connected && why == TurnOffReason.None);
     }
 
     // ------------------------------------------------------------------ low battery
