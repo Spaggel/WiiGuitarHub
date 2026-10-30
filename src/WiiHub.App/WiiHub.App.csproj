@@ -13,7 +13,7 @@
     <RootNamespace>WiiHub.App</RootNamespace>
     <AssemblyName>WiiHub</AssemblyName>
     <LangVersion>latest</LangVersion>
-    <Version>0.1.0</Version>
+    <Version>0.3.0</Version>
     <Product>Wii Guitar Hub</Product>
     <ApplicationIcon>Assets\wii-guitar-hub.ico</ApplicationIcon>
   </PropertyGroup>
