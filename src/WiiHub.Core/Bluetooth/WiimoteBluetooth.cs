@@ -96,81 +96,118 @@ public static unsafe class WiimoteBluetooth
         return result;
     }
 
+    public enum ScanEnd { Cancelled, Idle, NoAdapter }
+
+    /// <summary>Inquiry length in 1.28 s units (4 ≈ 5 s): long enough to catch a Wiimote, short enough to react.</summary>
+    private const byte InquiryUnits = 4;
+
+    /// <summary>Breathing room between inquiries, so connected controllers get the radio to themselves.</summary>
+    private static readonly TimeSpan PauseBetweenRounds = TimeSpan.FromSeconds(1);
+
+    /// <summary>Give up on a Wiimote after this many failed pairing attempts in one search.</summary>
+    private const int MaxAttemptsPerWiimote = 3;
+
+    /// <summary>Only one search at a time (a closed pairing window may still finish its last round).</summary>
+    private static readonly SemaphoreSlim ScanLock = new(1, 1);
+
     /// <summary>
-    /// Searches for Wiimotes that are in pairing mode and pairs every one it finds.
-    /// Wiimotes stay discoverable for ~20 seconds after pressing SYNC (or 1+2).
+    /// Keeps searching for Wiimotes in pairing mode and pairs every new one it finds, until
+    /// <paramref name="ct"/> is cancelled or nothing new was paired for <paramref name="stopWhenIdleFor"/>.
+    /// Wiimotes Windows already has paired are left alone. Blocking: call from a background thread.
     /// </summary>
-    public static List<PairResult> PairDiscoverable(PairMode mode, Action<string> progress, CancellationToken ct,
-        int maxRounds = 4)
+    /// <param name="report">Things worth keeping in the message list / log (found, paired, errors).</param>
+    /// <param name="paired">Called for every successful pairing.</param>
+    public static ScanEnd ScanAndPair(PairMode mode, Action<string> report, Action<PairResult> paired,
+        TimeSpan stopWhenIdleFor, CancellationToken ct)
     {
-        var results = new List<PairResult>();
-        var skipped = new HashSet<ulong>();
+        try { ScanLock.Wait(ct); }
+        catch (OperationCanceledException) { return ScanEnd.Cancelled; }
+
         var radios = OpenRadios();
         try
         {
             if (radios.Count == 0)
             {
-                progress("No Bluetooth adapter found. Make sure Bluetooth is turned on.");
-                return results;
+                report("No Bluetooth adapter found. Make sure Bluetooth is turned on.");
+                return ScanEnd.NoAdapter;
             }
 
-            for (int round = 1; round <= maxRounds && !ct.IsCancellationRequested; round++)
+            RemoveHalfPairedWiimotes(radios, report);
+
+            var pairedHere = new HashSet<ulong>();
+            var attempts = new Dictionary<ulong, int>();
+            var sinceLastPairing = System.Diagnostics.Stopwatch.StartNew();
+
+            while (!ct.IsCancellationRequested)
             {
+                if (sinceLastPairing.Elapsed >= stopWhenIdleFor) return ScanEnd.Idle;
+
                 foreach (var radio in radios)
                 {
                     if (ct.IsCancellationRequested) break;
-                    progress($"Searching for Wiimotes… (round {round}/{maxRounds})");
-
-                    // ~1.28 s per unit; 5 units ≈ 6.4 s inquiry.
-                    foreach (var device in FindDevices(radio.Handle, issueInquiry: true, timeoutMultiplier: 5))
+                    foreach (var device in FindDevices(radio.Handle, issueInquiry: true, timeoutMultiplier: InquiryUnits))
                     {
                         if (ct.IsCancellationRequested) break;
-                        if (!LooksLikeWiimote(device)) continue;
-                        if (results.Any(r => r.Address == device.Address && r.Success)) continue;
+                        if (!LooksLikeWiimote(device) || pairedHere.Contains(device.Address)) continue;
 
-                        // Already paired and connected: nothing to do.
-                        if (device.fConnected != 0 && device.fAuthenticated != 0)
-                        {
-                            progress($"{BtAddress.Format(device.Address)} is already connected.");
-                            continue;
-                        }
+                        // Already paired with Windows (connected or not): not a new Wiimote.
+                        if (device.fRemembered != 0 && device.fAuthenticated != 0) continue;
+                        if (device.fConnected != 0) continue;
 
-                        // A remembered-but-authenticated device can't be told apart from one that is
-                        // merely in range, so we only pair devices Windows does not have yet, plus
-                        // half-finished pairings (remembered but never authenticated).
-                        if (device.fRemembered != 0 && device.fAuthenticated != 0)
-                        {
-                            if (skipped.Add(device.Address))
-                                progress($"Skipped {BtAddress.Format(device.Address)}: Windows already has it paired. " +
-                                         "If this is the Wiimote you are syncing, remove it from the list first.");
-                            continue;
-                        }
+                        attempts.TryGetValue(device.Address, out int tries);
+                        if (tries >= MaxAttemptsPerWiimote) continue;
+                        attempts[device.Address] = tries + 1;
 
                         var dev = device;
                         if (dev.fRemembered != 0)
                         {
+                            // Left behind by a failed attempt; start clean.
                             ulong addr = dev.Address;
-                            int rm = BluetoothRemoveDevice(ref addr);
-                            progress($"Removed stale pairing for {BtAddress.Format(dev.Address)} (0x{rm:X}).");
+                            BluetoothRemoveDevice(ref addr);
                         }
 
-                        results.Add(PairOne(radio, ref dev, mode, progress));
+                        var result = PairOne(radio, ref dev, mode, report);
+                        if (result.Success)
+                        {
+                            pairedHere.Add(dev.Address);
+                            sinceLastPairing.Restart();
+                            paired(result);
+                        }
+                        else if (tries + 1 >= MaxAttemptsPerWiimote)
+                        {
+                            report($"Giving up on {BtAddress.Format(dev.Address)} after {MaxAttemptsPerWiimote} attempts. " +
+                                   "Press its SYNC button again, or check the Log for details.");
+                        }
                     }
                 }
 
-                if (results.Any(r => r.Success))
-                {
-                    // Give a second Wiimote a chance if the user is syncing several at once.
-                    if (round < maxRounds) progress("Paired! Searching once more for other Wiimotes in SYNC mode…");
-                    maxRounds = Math.Min(maxRounds, round + 1);
-                }
+                if (ct.WaitHandle.WaitOne(PauseBetweenRounds)) break;
+            }
+            return ScanEnd.Cancelled;
+        }
+        finally
+        {
+            CloseRadios(radios);
+            ScanLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Windows can keep a Wiimote "remembered" without a working pairing (e.g. an interrupted
+    /// attempt). Such entries never reconnect and block a new pairing, so remove them first.
+    /// </summary>
+    private static void RemoveHalfPairedWiimotes(List<Radio> radios, Action<string> report)
+    {
+        foreach (var radio in radios)
+        {
+            foreach (var d in FindDevices(radio.Handle, issueInquiry: false, timeoutMultiplier: 0))
+            {
+                if (!LooksLikeWiimote(d) || d.fRemembered == 0 || d.fAuthenticated != 0 || d.fConnected != 0) continue;
+                ulong addr = d.Address;
+                if (BluetoothRemoveDevice(ref addr) == 0)
+                    report($"Removed an unfinished pairing for {BtAddress.Format(d.Address)}.");
             }
         }
-        finally { CloseRadios(radios); }
-
-        if (results.Count == 0 && !ct.IsCancellationRequested)
-            progress("No Wiimote in pairing mode was found. Press the red SYNC button (under the battery cover) and try again.");
-        return results;
     }
 
     private static PairResult PairOne(Radio radio, ref BLUETOOTH_DEVICE_INFO device, PairMode mode, Action<string> progress)
