@@ -53,6 +53,15 @@ public sealed class ControllerHub : IDisposable
     /// <summary>Raised from the calling thread.</summary>
     public event Action<ControllerSlot>? SlotRemoved;
 
+    /// <summary>A Wiimote connected and is ready (raised from a background thread).</summary>
+    public event Action<ControllerSlot>? ControllerConnected;
+
+    /// <summary>
+    /// A Wiimote went away (background thread). The reason is <see cref="TurnOffReason.None"/> when the
+    /// connection was lost, otherwise why it was turned off.
+    /// </summary>
+    public event Action<ControllerSlot, TurnOffReason>? ControllerDisconnected;
+
     /// <summary>A controller's battery ran low (raised once per drop, from a background thread).</summary>
     public event Action<ControllerSlot, int>? LowBattery;
 
@@ -184,7 +193,8 @@ public sealed class ControllerHub : IDisposable
             RequestSave();
 
             // If it already dropped while we were wiring it up, clean up now.
-            if (!dev.IsConnected) OnDeviceDisconnected(dev);
+            if (dev.IsConnected) ControllerConnected?.Invoke(slot);
+            else OnDeviceDisconnected(dev);
         }
         catch (Exception ex)
         {
@@ -208,6 +218,7 @@ public sealed class ControllerHub : IDisposable
         dev.Dispose();
         _retryAfter[dev.DevicePath] = Environment.TickCount64 + 1000;
         if (slot is null) return;
+        ControllerDisconnected?.Invoke(slot, slot.OffReason);
         if (slot.TurnedOff)
             Log.Info($"{slot.Config.Name} turned off. Press any button on the Wiimote to turn it on again.");
         else
@@ -220,7 +231,8 @@ public sealed class ControllerHub : IDisposable
     /// Switches a Wiimote off by dropping its Bluetooth connection. The pairing stays, so a button
     /// press turns it on and reconnects it. Blocking; call from a background thread.
     /// </summary>
-    public bool TurnOff(ControllerSlot slot, out string message, string reason = "")
+    public bool TurnOff(ControllerSlot slot, out string message, string reason = "",
+        TurnOffReason why = TurnOffReason.Manual)
     {
         var dev = slot.Device;
         if (dev is null || !dev.IsConnected)
@@ -253,7 +265,7 @@ public sealed class ControllerHub : IDisposable
                 return false;
             }
 
-            slot.MarkTurnedOff();
+            slot.MarkTurnedOff(why);
             // Don't wait for the read timeout: detach right away.
             OnDeviceDisconnected(dev);
             message = $"{slot.Config.Name} turned off.";
@@ -293,7 +305,7 @@ public sealed class ControllerHub : IDisposable
 
             _ = Task.Run(() =>
             {
-                if (!TurnOff(slot, out _, $"idle for {minutes} min"))
+                if (!TurnOff(slot, out _, $"idle for {minutes} min", TurnOffReason.Idle))
                     _autoOffBlockedUntil[slot.Id] = Environment.TickCount64 + 5 * 60_000; // don't spam retries
             });
         }

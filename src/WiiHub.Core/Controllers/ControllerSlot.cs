@@ -6,6 +6,15 @@ using WiiHub.Core.Wiimote;
 
 namespace WiiHub.Core.Controllers;
 
+public enum TurnOffReason
+{
+    None,
+    /// <summary>The user clicked Turn off / Turn off all.</summary>
+    Manual,
+    /// <summary>Nobody used it for the auto-off time.</summary>
+    Idle,
+}
+
 /// <summary>
 /// A remembered controller. The slot outlives the Bluetooth connection: when the Wiimote drops
 /// out (battery swap) and reconnects, it is re-attached to the same slot, with the same player
@@ -31,7 +40,7 @@ public sealed class ControllerSlot : IDisposable
     private int _lastBattery = -1;
     private bool _disposed;
     private long _lastActivity = Environment.TickCount64;
-    private volatile bool _turnedOff;
+    private volatile int _offReason; // TurnOffReason
 
     /// <summary>Inputs that never count as "someone is using it": gravity on the motion sensor and
     /// tilt (a guitar leaning against a wall is permanently tilted).</summary>
@@ -79,7 +88,7 @@ public sealed class ControllerSlot : IDisposable
     {
         _device = device;
         _everConnected = true;
-        _turnedOff = false;
+        _offReason = (int)TurnOffReason.None;
         Interlocked.Exchange(ref _lastActivity, Environment.TickCount64);
         _normalizer.Reset();
         Config.LastSeen = DateTime.Now;
@@ -244,11 +253,14 @@ public sealed class ControllerSlot : IDisposable
     public TimeSpan IdleTime => TimeSpan.FromMilliseconds(Environment.TickCount64 - Interlocked.Read(ref _lastActivity));
 
     /// <summary>True after <see cref="ControllerHub.TurnOff"/> until the Wiimote reconnects.</summary>
-    public bool TurnedOff => _turnedOff;
+    public bool TurnedOff => _offReason != (int)TurnOffReason.None;
 
-    internal void MarkTurnedOff()
+    /// <summary>Why the Wiimote was turned off (None while connected or when it was lost).</summary>
+    public TurnOffReason OffReason => (TurnOffReason)_offReason;
+
+    internal void MarkTurnedOff(TurnOffReason reason)
     {
-        _turnedOff = true;
+        _offReason = (int)(reason == TurnOffReason.None ? TurnOffReason.Manual : reason);
         EnsureOutputs();
         Changed?.Invoke(this);
     }
@@ -279,7 +291,7 @@ public sealed class ControllerSlot : IDisposable
             // A deliberately turned-off Wiimote also unplugs its virtual controller; a dropped one
             // (battery swap) keeps it if the user asked for that.
             bool needPad = WantsXbox &&
-                           (IsConnected || (_everConnected && Config.KeepVirtualPadWhenDisconnected && !_turnedOff));
+                           (IsConnected || (_everConnected && Config.KeepVirtualPadWhenDisconnected && !TurnedOff));
 
             if (needPad && _pad is null && _padFactory is not null)
             {

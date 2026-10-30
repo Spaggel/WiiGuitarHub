@@ -135,13 +135,14 @@ Click **Settings** at the bottom of the sidebar. Changes are saved immediately.
 |---|---|
 | **Theme** | Light, Dark, or **Follow Windows** (default). |
 | **Turn off idle Wiimotes** | Switch off a Wiimote nobody touched for 5, 10 (default), 15 or 30 minutes or 1 hour, or never. |
+| **Notifications** | Show a Windows notification when a Wiimote connects (*"Red guitar connected as Player 2"*), disconnects, or is turned off because it was idle. On by default. Turning a Wiimote off yourself doesn't notify. |
 | **Low battery** | When a Wiimote drops to 15% or below: show a Windows notification and/or rumble the Wiimote (three short pulses). Both on by default, each can be turned off. A Wiimote warns once, and again only after new batteries ran low. |
 | **Minimize to the tray** | Minimizing hides the window to the notification area (tray). On by default. |
 | **Close button keeps it running in the tray** | The ✕ button hides the window instead of exiting. Off by default. |
 | **Start with Windows** / **Start minimized** | Start automatically when you log in, optionally hidden in the tray. |
 | **Check for updates** | Look for a newer release on GitHub at startup. You can also click **Check now**. |
 
-**Notifications during games:** low-battery and update notifications are normal Windows notifications.
+**Notifications during games:** connection, low-battery and update notifications are normal Windows notifications.
 While a fullscreen game runs, Windows' *Do not disturb* usually holds them back until you leave the
 game (you find them in the notification centre). The rumble always comes through, so leave that on
 if you want to notice low batteries mid-song.

@@ -40,6 +40,17 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Notifications -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Notifications" Style="{StaticResource SectionTitle}" />
+                        <CheckBox Content="Notify when a Wiimote connects, disconnects or turns off because it was idle"
+                                  IsChecked="{Binding ConnectionNotifications}" />
+                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Text="For example “Red guitar connected as Player 2”. Turning a Wiimote off yourself doesn't show a notification. While a fullscreen game runs, Windows' “Do not disturb” may hold notifications back until you leave the game." />
+                    </StackPanel>
+                </Border>
+
                 <!-- Low battery -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
