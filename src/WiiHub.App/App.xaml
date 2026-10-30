@@ -30,6 +30,7 @@
             <local:BatteryToBrushConverter x:Key="BatteryBrush" />
             <local:BatteryToGlyphConverter x:Key="BatteryGlyph" />
             <local:HexToBrushConverter x:Key="HexBrush" />
+            <local:IndexOpacityConverter x:Key="IndexOpacity" />
 
             <!-- No implicit TextBlock style on purpose: it would override the foreground that
                  buttons pass on to their content. Windows set Foreground instead. -->

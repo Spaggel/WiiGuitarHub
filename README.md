@@ -101,9 +101,31 @@ reconnect by itself. Fix it like this:
 | Turn one Wiimote off | Click **Turn off** in the header, or right-click it in the list → **Turn off**. |
 | Turn all Wiimotes off | Click **Turn off all** in the sidebar, or right-click the tray icon → **Turn off all Wiimotes**. |
 | Check the batteries | Each controller shows a battery icon and percentage in the list. |
+| Check the connection | Signal bars next to each controller show the connection quality. Hover them for details. |
 | Change settings | Click **Settings** at the bottom of the sidebar. |
 
 Turning a Wiimote off keeps it paired. Press any button to turn it on again.
+
+### Connection quality and range test
+
+Each connected controller shows **signal bars** (in the list and the header) and a rating:
+**Good**, **Fair** or **Poor**. Windows doesn't tell apps the real Bluetooth signal strength of a
+Wiimote, so Wii Guitar Hub measures what matters for playing instead:
+
+- **Updates per second**: a Wiimote sends about 100 updates per second.
+- **Dropouts**: moments where nothing arrives for 60 ms or longer. These cause missed notes or
+  "stuck" frets.
+- **Response time**: every few seconds Wii Guitar Hub asks the Wiimote for one byte and times the
+  answer.
+
+To check a spot before you play, open the **Input check** tab and use **Run range test** in the
+**Connection** card. Stand or sit where you normally play, hold the guitar as you would while
+playing, and wait 20 seconds. You get a verdict with the numbers and, if needed, tips. The most
+common fix is moving a USB Bluetooth adapter from the back of the PC to the desk with a short USB
+extension cable.
+
+A busy PC or a weak Bluetooth adapter also shows up as a worse rating. That's intended: it affects
+your game just the same.
 
 ### Settings
 
@@ -283,6 +305,11 @@ keyboard), Z is the left trigger and C is LB.
 
 **Tilt triggers all the time or never**
 - Calibrate tilt again (Rest / Tilted) and adjust the **Trigger at** slider.
+
+**Notes are missed or frets get "stuck"**
+- Look at the signal bars, or run the **range test** from the spot where you play (see *Connection
+  quality and range test*). Dropouts mean the Bluetooth connection is struggling: move closer, or
+  give the Bluetooth adapter a clear line of sight.
 
 **I don't see low-battery notifications during a game**
 - Windows holds notifications back during fullscreen games (*Do not disturb*). They are in the
