@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wii Guitar Hub</title>
+<meta name="description" content="Play PC games with Wii Remotes and Wii Guitar Hero guitars over Bluetooth. Free Windows app that makes them show up as Xbox 360 controllers or keyboard keys.">
+<meta property="og:title" content="Wii Guitar Hub">
+<meta property="og:description" content="Use your Wii Guitar Hero guitars and Wiimotes on a Windows PC, in Clone Hero, YARG and more.">
+<meta property="og:image" content="https://spaggel.github.io/WiiGuitarHub/images/app.png">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;1,400&family=Big+Shoulders+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0b1a4d;
+  --navy-2: #13266a;
+  --cyan: #35e3ff;
+  --paper: #f3f6fc;
+  --ink: #142042;
+  --muted: #4f5d80;
+  --line: #d6ddef;
+  --blue: #2a5ce0;
+  --green: #36b85a;
+  --red: #e5484d;
+  --yellow: #f0c02c;
+  --fblue: #3b82f6;
+  --orange: #f7882f;
+  --display: "Big Shoulders Display", sans-serif;
+  --body: "Figtree", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+::selection { background: var(--cyan); color: var(--navy); }
+html { accent-color: var(--blue); caret-color: var(--blue); }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.6 var(--body); }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--blue); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; border-radius: 4px; }
+.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+h1, h2, h3 { font-family: var(--display); font-weight: 900; line-height: .95; margin: 0; letter-spacing: .005em; }
+h2 { font-size: clamp(2.4rem, 5vw, 3.6rem); margin-bottom: 1.25rem; }
+h1, h2 { text-wrap: balance; }
+p, li, dd { text-wrap: pretty; }
+h3 { font-size: 1.6rem; font-weight: 700; margin-bottom: .4rem; }
+p { margin: 0 0 1rem; max-width: 66ch; }
+kbd { font: 700 .9em var(--body); background: #fff; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: .05em .4em; }
+
+/* Hero */
+.hero { background: var(--navy); color: #fff; padding-bottom: 0; overflow: hidden; }
+.hero a { color: var(--cyan); }
+nav { display: flex; align-items: center; justify-content: space-between; padding-block: 20px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; color: #fff !important; text-decoration: none; font: 900 1.5rem var(--display); }
+.brand img { width: 40px; }
+nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; }
+nav ul a { color: #c9d4f5 !important; text-decoration: none; }
+nav ul a:hover { color: #fff !important; }
+.hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; padding-top: 48px; }
+.hero h1 { font-size: clamp(3.4rem, 8vw, 6rem); max-width: 11ch; }
+.lede { font-size: 1.25rem; color: #d7e0fb; margin-top: 1.5rem; max-width: 34ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 2rem; }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 10px; font-weight: 700; text-decoration: none; }
+.btn-primary { background: var(--cyan); color: var(--navy) !important; }
+.btn-primary:hover { background: #8ef0ff; }
+.btn-ghost { color: #fff !important; box-shadow: inset 0 0 0 2px #3a4f95; }
+.btn-ghost:hover { box-shadow: inset 0 0 0 2px var(--cyan); }
+.platform { margin-top: 1rem; color: #aebbe6; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
+.platform svg { flex: none; }
+
+/* Fret row: the one playful moment */
+.frets-block { padding-bottom: 8px; }
+.frets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.fret { --c: var(--green); aspect-ratio: 3 / 4; border: 0; border-radius: 16px; cursor: pointer;
+  background: color-mix(in srgb, var(--c) 22%, var(--navy)); color: color-mix(in srgb, var(--c) 70%, #fff);
+  font: 900 2rem var(--display); display: grid; place-items: end center; padding-bottom: 14px;
+  box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--c) 40%, var(--navy)); transition: background .08s, box-shadow .08s, transform .08s; }
+.fret.on { background: var(--c); color: var(--navy); transform: translateY(3px); box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--c) 60%, #000); }
+.fret:nth-child(2) { --c: var(--red); } .fret:nth-child(3) { --c: var(--yellow); }
+.fret:nth-child(4) { --c: var(--fblue); } .fret:nth-child(5) { --c: var(--orange); }
+.frets-hint { color: #8f9fd4; font-size: .9rem; margin: 12px 0 0; }
+.shot-hero { margin-top: 64px; }
+.shot-hero img { border-radius: 14px 14px 0 0; box-shadow: 0 0 0 1px #2a3c7d, 0 -12px 40px -8px rgba(2, 8, 30, .55); }
+
+/* Sections */
+section { padding-block: 88px; }
+section + section { border-top: 1px solid var(--line); }
+.intro { font-size: 1.2rem; color: var(--muted); max-width: 60ch; margin-bottom: 2.5rem; }
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px 40px; margin: 0; }
+.features dt { font-weight: 700; font-size: 1.1rem; margin-bottom: .3rem; display: flex; gap: 10px; align-items: center; }
+.features dt::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--dot, var(--blue)); flex: none; }
+.features dd { margin: 0; color: var(--muted); }
+.features div:nth-child(5n+1) { --dot: var(--green); } .features div:nth-child(5n+2) { --dot: var(--red); }
+.features div:nth-child(5n+3) { --dot: var(--yellow); } .features div:nth-child(5n+4) { --dot: var(--fblue); }
+.features div:nth-child(5n+5) { --dot: var(--orange); }
+
+.needs { background: var(--navy); color: #fff; border-radius: 18px; padding: 40px; display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: start; }
+.needs h2 { margin-bottom: .75rem; }
+.needs ul { margin: 0; padding-left: 1.2em; }
+.needs li { margin-bottom: .6rem; color: #d7e0fb; }
+.needs li strong { color: #fff; }
+.needs a { color: var(--cyan); }
+.win { width: 88px; }
+
+.steps { list-style: none; padding: 0; margin: 0; counter-reset: s; display: grid; gap: 0; }
+.steps > li { counter-increment: s; display: grid; grid-template-columns: 72px 1fr; gap: 24px; padding: 28px 0; border-top: 1px solid var(--line); }
+.steps > li::before { content: counter(s); font: 900 3.4rem/0.9 var(--display); color: var(--blue); }
+.steps ol, .steps ul { margin: .25rem 0 0; padding-left: 1.2em; color: var(--muted); }
+.steps li li { margin-bottom: .3rem; }
+.note { background: color-mix(in srgb, var(--yellow) 16%, #fff); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--yellow) 55%, #fff); padding: 12px 16px; border-radius: 8px; color: var(--muted); max-width: 66ch; margin-top: 1rem; }
+
+.split { display: grid; grid-template-columns: .8fr 1.2fr; gap: 56px; align-items: start; }
+.split figure { margin: 0; }
+.split img { border-radius: 12px; box-shadow: 0 0 0 1px var(--line), 0 24px 48px -24px rgba(11, 26, 77, .35); }
+figcaption { color: var(--muted); font-size: .95rem; margin-top: 12px; }
+
+table { border-collapse: collapse; width: 100%; font-size: 1rem; margin-top: 1.5rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 700; }
+.chip { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+
+details { border-top: 1px solid var(--line); max-width: 760px; }
+details:last-of-type { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; padding: 18px 0; font-weight: 700; font-size: 1.1rem; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font: 900 1.6rem/1 var(--display); color: var(--blue); }
+details[open] summary::after { content: "−"; }
+details ul { margin: 0 0 20px; padding-left: 1.2em; color: var(--muted); }
+details li { margin-bottom: .4rem; }
+
+footer { background: var(--navy); color: #aebbe6; padding-block: 40px; font-size: .95rem; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+footer a { color: var(--cyan); }
+footer p { margin: 0; }
+footer nav { display: flex; gap: 20px; padding: 0; }
+
+@media (max-width: 860px) {
+  nav ul { display: none; }
+  .hero-grid, .split { grid-template-columns: 1fr; gap: 40px; }
+  .hero-grid { padding-top: 24px; }
+  .features { grid-template-columns: 1fr 1fr; }
+  .needs { grid-template-columns: 1fr; padding: 28px 20px; }
+  .win { width: 56px; }
+  section { padding-block: 64px; }
+}
+@media (max-width: 560px) {
+  .features { grid-template-columns: 1fr; }
+  .steps > li { grid-template-columns: 1fr; gap: 6px; }
+  .table-scroll { overflow-x: auto; }
+  .shot-hero { margin-top: 40px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <nav aria-label="Main">
+      <a class="brand" href="#"><img src="images/logo.png" alt="" width="40" height="40">Wii Guitar Hub</a>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#help">Help</a></li>
+        <li><a href="https://github.com/Spaggel/WiiGuitarHub">GitHub</a></li>
+      </ul>
+    </nav>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Your Wii guitar, on your PC.</h1>
+        <p class="lede">Connect Wii Remotes and Wii Guitar Hero guitars over Bluetooth. They show up as Xbox 360 controllers, ready for Clone Hero and YARG.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="https://github.com/Spaggel/WiiGuitarHub/releases/latest">
+            <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M0 2.2 6.5 1.3v6.3H0zm7.3-1L16 0v7.6H7.3zM0 8.4h6.5v6.3L0 13.8zm7.3 0H16V16l-8.7-1.2z"/></svg>
+            Download for Windows
+          </a>
+          <a class="btn btn-ghost" href="#setup">How to set it up</a>
+        </div>
+        <p class="platform">Free and open source. Windows 10 and 11 only.</p>
+      </div>
+
+      <div class="frets-block">
+        <div class="frets" role="group" aria-label="Try the frets">
+          <button class="fret" type="button" aria-label="Green fret, key 1">1</button>
+          <button class="fret" type="button" aria-label="Red fret, key 2">2</button>
+          <button class="fret" type="button" aria-label="Yellow fret, key 3">3</button>
+          <button class="fret" type="button" aria-label="Blue fret, key 4">4</button>
+          <button class="fret" type="button" aria-label="Orange fret, key 5">5</button>
+        </div>
+        <p class="frets-hint">Press 1 to 5 on your keyboard. In keyboard mode, that's exactly what your guitar's frets send.</p>
+      </div>
+    </div>
+
+    <figure class="shot-hero">
+      <img src="images/app.png" width="1804" height="1186" alt="Wii Guitar Hub window with two connected guitars, Aerosmith red and White, showing the live input check with frets, strum bar, whammy and tilt.">
+    </figure>
+  </div>
+</header>
+
+<main>
+  <section id="features">
+    <div class="wrap">
+      <h2>What it does</h2>
+      <p class="intro">Wii Guitar Hub runs on your Windows PC and turns each Wiimote into an Xbox 360 controller or keyboard keys. Plug a Guitar Hero guitar into the Wiimote and frets, strumming, whammy and Star Power tilt all work.</p>
+      <dl class="features">
+        <div><dt>Pair once, then just press a button</dt><dd>Pair with the red SYNC button. After that, any button press reconnects it, even after new batteries.</dd></div>
+        <div><dt>Several controllers at once</dt><dd>Each one gets its own player number, shown on the Wiimote's LEDs.</dd></div>
+        <div><dt>Live input check</dt><dd>Press green and see green light up. Check every fret, the whammy and tilt before you play.</dd></div>
+        <div><dt>Remap any button</dt><dd>Every button, fret, whammy and stick can send whatever you like.</dd></div>
+        <div><dt>Names you'll recognise</dt><dd>Call them “Red guitar” or “Aerosmith” instead of a Bluetooth address.</dd></div>
+        <div><dt>Saves batteries</dt><dd>Turn Wiimotes off from the PC, or let idle ones switch off by themselves.</dd></div>
+        <div><dt>Low-battery warning</dt><dd>A Windows notification plus a short rumble on the guitar, so you notice it mid-song.</dd></div>
+        <div><dt>Connection check</dt><dd>Signal bars and a 20-second range test tell you if the spot you play from is good enough.</dd></div>
+        <div><dt>Lives in the tray</dt><dd>Start with Windows and stay out of the way. Ideal for a dedicated Clone Hero or YARG PC.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="requirements">
+    <div class="wrap">
+      <div class="needs">
+        <svg class="win" viewBox="0 0 16 16" aria-hidden="true"><path fill="#35e3ff" d="M0 2.2 6.5 1.3v6.3H0zm7.3-1L16 0v7.6H7.3zM0 8.4h6.5v6.3L0 13.8zm7.3 0H16V16l-8.7-1.2z"/></svg>
+        <div>
+          <h2>Windows only</h2>
+          <p>Wii Guitar Hub uses Windows' own Bluetooth stack and Xbox controller drivers, so it does not run on macOS or Linux. You need:</p>
+          <ul>
+            <li><strong>A Windows 10 or 11 PC with Bluetooth</strong>, built in or a USB Bluetooth adapter.</li>
+            <li><strong>An original Nintendo Wii Remote</strong>, the normal one or “Motion Plus inside”. Most third-party Wiimotes don't work on a PC.</li>
+            <li><strong>Optional: a Wii Guitar Hero guitar</strong> (Guitar Hero III, World Tour, 5, Warriors of Rock, or a compatible third-party one) or a Nunchuk.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="setup">
+    <div class="wrap">
+      <h2>How to set it up</h2>
+      <p class="intro">About five minutes, and you only pair each Wiimote once.</p>
+      <ol class="steps">
+        <li>
+          <div>
+            <h3>Install ViGEmBus</h3>
+            <p>This free driver creates the virtual Xbox 360 controllers. Download <code>ViGEmBus_…_x64_x86_arm64.exe</code> from the <a href="https://github.com/nefarius/ViGEmBus/releases">ViGEmBus releases page</a>, run it, and restart if asked. Only want keyboard output? You can skip this.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Download and start Wii Guitar Hub</h3>
+            <p>Get <code>WiiGuitarHub-win-x64.zip</code> from the <a href="https://github.com/Spaggel/WiiGuitarHub/releases/latest">latest release</a>, extract it to a folder, and double-click <strong>WiiHub.exe</strong>. Nothing else to install; .NET is included.</p>
+            <p class="note">Windows SmartScreen may warn you the first time, because the app isn't code-signed. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Pair your Wiimote</h3>
+            <ol>
+              <li>Click <strong>+ Pair a Wiimote</strong>. It starts searching right away.</li>
+              <li>Open the battery cover and press the small <strong>red SYNC button</strong>. The blue LEDs blink.</li>
+              <li>Within seconds it says <em>paired</em>, the Wiimote rumbles and its player LED lights up.</li>
+              <li>Press SYNC on the next Wiimote, or close the window.</li>
+            </ol>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Plug in the guitar</h3>
+            <p>Connect the Wiimote's cable to the guitar and slide it into the slot. Wii Guitar Hub detects the guitar on its own. Open <strong>Input check</strong>, press each fret, strum and push the whammy to see it all light up.</p>
+            <p>For Star Power, calibrate tilt once: hold the guitar normally and click <strong>Rest</strong>, tilt the neck up and click <strong>Tilted</strong>.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Set up your game</h3>
+            <p>In Clone Hero or YARG, the guitar appears as an Xbox 360 controller. Assign frets, strum, whammy and Star Power once in the game's controller settings; it remembers them.</p>
+            <p>From then on: pick up a guitar, press any button, play.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="mapping">
+    <div class="wrap split">
+      <div>
+        <h2>Make every button yours</h2>
+        <p>The <strong>Button mapping</strong> tab lists every input with what it sends. Click <strong>Detect</strong> and press a button to pick the input; in keyboard mode, click <strong>Press key</strong> to pick the key. Rows light up while you press them, so you can test right there.</p>
+        <p>Choose per controller whether it shows up as an Xbox 360 controller, keyboard, or both. Keyboard mode helps with games that don't support controllers.</p>
+        <div class="table-scroll">
+          <table aria-label="Default guitar buttons">
+                        <thead><tr><th>Guitar</th><th>Xbox 360</th><th>Keyboard</th></tr></thead>
+            <tbody>
+              <tr><td><span class="chip" style="background:var(--green)"></span><span class="chip" style="background:var(--red)"></span><span class="chip" style="background:var(--yellow)"></span><span class="chip" style="background:var(--fblue)"></span><span class="chip" style="background:var(--orange)"></span> Frets</td><td>A B Y X LB</td><td><kbd>1</kbd>–<kbd>5</kbd></td></tr>
+              <tr><td>Strum up / down</td><td>D-pad up / down</td><td><kbd>↑</kbd> <kbd>↓</kbd></td></tr>
+              <tr><td>Star Power (− or tilt)</td><td>Back / right stick Y</td><td><kbd>Space</kbd></td></tr>
+              <tr><td>Whammy</td><td>Right stick X</td><td><kbd>W</kbd></td></tr>
+              <tr><td>+</td><td>Start</td><td><kbd>Enter</kbd></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <figure>
+        <img src="images/mapping.png" width="1800" height="1570" loading="lazy" alt="The Button mapping tab: each fret row has a colour bar, an input dropdown, a Detect button and an output such as A, B, Y, X or LB.">
+        <figcaption>Each fret row carries its own colour and lights up while pressed.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="help">
+    <div class="wrap">
+      <h2>When something's off</h2>
+      <p class="intro">The most common fixes. The <a href="https://github.com/Spaggel/WiiGuitarHub#troubleshooting">full guide</a> covers the rest.</p>
+      <details>
+        <summary>The pairing window doesn't find my Wiimote</summary>
+        <ul>
+          <li>Press the red SYNC button again while the window is open. A Wiimote is only findable for about 20 seconds after pressing SYNC.</li>
+          <li>Paired with this PC before? Press any button instead. If it doesn't connect, remove it under <em>Wiimotes Windows already knows</em> and pair again with SYNC.</li>
+          <li>Check that Bluetooth is on in Windows. Third-party Wiimotes usually don't work.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>It doesn't reconnect after changing batteries</summary>
+        <ul>
+          <li>It was probably paired with 1 + 2 instead of SYNC. Remove it in the pairing window and pair again with the red SYNC button.</li>
+          <li>Wiimotes never connect on their own while idle. Press a button.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Notes are missed or frets get stuck</summary>
+        <ul>
+          <li>Run the range test in <strong>Input check</strong> from where you play. Dropouts mean the Bluetooth link is struggling.</li>
+          <li>Move closer, or put a USB Bluetooth adapter on your desk with a short extension cable.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Xbox controller mode doesn't work</summary>
+        <ul><li>Install ViGEmBus (step 1) and restart your PC.</li></ul>
+      </details>
+      <details>
+        <summary>Keyboard mode doesn't reach my game</summary>
+        <ul><li>Windows blocks key presses to games running as administrator. Start Wii Guitar Hub as administrator too, or use Xbox 360 mode.</li></ul>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Wii Guitar Hub is free and open source. Not affiliated with Nintendo or Activision.</p>
+    <nav aria-label="Project"><a href="https://github.com/Spaggel/WiiGuitarHub">Source on GitHub</a><a href="https://github.com/Spaggel/WiiGuitarHub/issues">Report a problem</a></nav>
+  </div>
+</footer>
+
+<script>
+  const frets = document.querySelectorAll('.fret');
+  const press = (i, on) => frets[i] && frets[i].classList.toggle('on', on);
+  addEventListener('keydown', e => { if (!e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) press(e.key - 1, true); });
+  addEventListener('keyup', e => press(e.key - 1, false));
+  frets.forEach((f, i) => {
+    f.addEventListener('pointerdown', () => press(i, true));
+    ['pointerup', 'pointerleave'].forEach(t => f.addEventListener(t, () => press(i, false)));
+  });
+</script>
+</body>
+</html>
