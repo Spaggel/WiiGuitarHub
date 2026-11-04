@@ -47,8 +47,9 @@ notice in the sidebar.
 
 ### 2. Download Wii Guitar Hub
 
-1. Go to the [Releases page](https://github.com/Spaggel/WiiGuitarHub/releases) and download
-   `WiiGuitarHub-win-x64.zip` from the newest release.
+1. [Download `WiiGuitarHub-win-x64.zip`](https://github.com/Spaggel/WiiGuitarHub/releases/latest/download/WiiGuitarHub-win-x64.zip)
+   (always the newest version). Release notes and older versions are on the
+   [Releases page](https://github.com/Spaggel/WiiGuitarHub/releases).
 2. Extract the zip to a folder of your choice, for example `Documents\Wii Guitar Hub`.
 3. Double-click **WiiHub.exe**.
 
