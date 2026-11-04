@@ -28,8 +28,8 @@ Wii Guitar Hub connects your Wiimotes to Windows and makes each one show up as a
 - A Windows 10 or Windows 11 PC with **Bluetooth**: built-in, or a USB Bluetooth adapter.
 - An **original Nintendo Wii Remote**, either the normal one or the "Motion Plus inside" one.
   Most third-party Wiimotes do not work on a PC.
-- Optional: a **Wii Guitar Hero guitar** (Guitar Hero III, World Tour, 5, Warriors of Rock, or a
-  compatible third-party guitar) or a **Nunchuk**.
+- A **Wii Guitar Hero guitar**: Guitar Hero III, World Tour, 5, Warriors of Rock, or a compatible
+  third-party guitar.
 
 ## Installation
 
